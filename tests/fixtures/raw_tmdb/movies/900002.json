@@ -1,0 +1,86 @@
+{
+  "id": 900002,
+  "title": "Fixture Film Two",
+  "original_title": "Película de Prueba",
+  "overview": "Two friends cross the desert to rescue a kidnapped sister.",
+  "release_date": "",
+  "runtime": 0,
+  "budget": 0,
+  "revenue": 0,
+  "vote_average": 0,
+  "vote_count": 0,
+  "original_language": "xx",
+  "imdb_id": null,
+  "belongs_to_collection": null,
+  "genres": [
+    {
+      "id": 12,
+      "name": "Adventure"
+    }
+  ],
+  "production_companies": [],
+  "production_countries": [
+    {
+      "iso_3166_1": "ES",
+      "name": "Spain"
+    },
+    {
+      "iso_3166_1": "US",
+      "name": "United States of America"
+    }
+  ],
+  "spoken_languages": [
+    {
+      "iso_639_1": "es",
+      "english_name": "Spanish",
+      "name": "Español"
+    },
+    {
+      "iso_639_1": "xx",
+      "english_name": "No Language",
+      "name": "No Language"
+    }
+  ],
+  "keywords": {
+    "keywords": [
+      {
+        "id": 9001,
+        "name": "detective"
+      }
+    ]
+  },
+  "external_ids": {
+    "imdb_id": null,
+    "wikidata_id": null
+  },
+  "credits": {
+    "cast": [
+      {
+        "id": 101,
+        "name": "Actor 1",
+        "gender": 1,
+        "order": 0,
+        "character": "Lead",
+        "credit_id": "c101x0"
+      },
+      {
+        "id": 300,
+        "name": "Actor Three Hundred",
+        "gender": 3,
+        "order": 1,
+        "character": "Sister",
+        "credit_id": "c300x1"
+      }
+    ],
+    "crew": [
+      {
+        "id": 301,
+        "name": "Second Director",
+        "gender": 2,
+        "job": "Director",
+        "department": "Directing",
+        "credit_id": "w301dir"
+      }
+    ]
+  }
+}

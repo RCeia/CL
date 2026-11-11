@@ -1,0 +1,14 @@
+[system]
+You annotate film synopses with plot facts. You only state facts that the synopsis supports explicitly or by direct implication, never facts you know about the film from elsewhere. You answer with a single JSON object and nothing else.
+[user]
+Extract plot facts from the synopsis below.
+
+For each relation, choose zero or more values from its allowed list, at most $max_values per relation. Use the exact spelling of the allowed values. Return an empty list when the synopsis does not support any value.
+
+Relations and allowed values:
+$relations
+
+Film: $title ($year)
+Synopsis: $synopsis
+
+Return a JSON object whose keys are exactly: $keys.

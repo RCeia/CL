@@ -1,0 +1,181 @@
+prefixes:
+  kl: "http://example.org/kl/ontology#"
+  res: "http://example.org/kl/resource/"
+  schema: "http://schema.org/"
+  owl: "http://www.w3.org/2002/07/owl#"
+  xsd: "http://www.w3.org/2001/XMLSchema#"
+  wd: "http://www.wikidata.org/entity/"
+
+mappings:
+  film:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*]"]
+    s: res:film/$(tmdb_id)
+    po:
+      - [a, kl:Film]
+      - [schema:name, $(title), xsd:string]
+      - [kl:originalTitle, $(original_title), xsd:string]
+      - [kl:tmdbId, $(tmdb_id), xsd:integer]
+      - [kl:imdbId, $(imdb_id), xsd:string]
+      - [schema:datePublished, $(release_date), xsd:date]
+      - [kl:runtimeMinutes, $(runtime), xsd:integer]
+      - [kl:budget, $(budget), xsd:integer]
+      - [kl:revenue, $(revenue), xsd:integer]
+      - [kl:voteAverage, $(vote_average), xsd:decimal]
+      - [kl:voteCount, $(vote_count), xsd:integer]
+      - [schema:inLanguage, res:language/$(original_language)~iri]
+      - [owl:sameAs, wd:$(wikidata_id)~iri]
+
+  film_genre:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].genres[*]"]
+    s: res:film/$(movie_id)
+    po:
+      - [schema:genre, res:genre/$(id)~iri]
+
+  genre:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].genres[*]"]
+    s: res:genre/$(id)
+    po:
+      - [a, kl:Genre]
+      - [schema:name, $(name), xsd:string]
+      - [kl:tmdbId, $(id), xsd:integer]
+
+  film_keyword:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].keywords[*]"]
+    s: res:film/$(movie_id)
+    po:
+      - [schema:keywords, res:keyword/$(id)~iri]
+
+  keyword:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].keywords[*]"]
+    s: res:keyword/$(id)
+    po:
+      - [a, kl:Keyword]
+      - [schema:name, $(name), xsd:string]
+      - [kl:tmdbId, $(id), xsd:integer]
+
+  film_collection:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].collections[*]"]
+    s: res:film/$(movie_id)
+    po:
+      - [schema:isPartOf, res:collection/$(id)~iri]
+
+  collection:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].collections[*]"]
+    s: res:collection/$(id)
+    po:
+      - [a, kl:FilmCollection]
+      - [schema:name, $(name), xsd:string]
+      - [kl:tmdbId, $(id), xsd:integer]
+
+  film_company:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].production_companies[*]"]
+    s: res:film/$(movie_id)
+    po:
+      - [schema:productionCompany, res:company/$(id)~iri]
+
+  company:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].production_companies[*]"]
+    s: res:company/$(id)
+    po:
+      - [a, kl:ProductionCompany]
+      - [schema:name, $(name), xsd:string]
+      - [kl:tmdbId, $(id), xsd:integer]
+
+  film_country:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].production_countries[*]"]
+    s: res:film/$(movie_id)
+    po:
+      - [schema:countryOfOrigin, res:country/$(iso_3166_1)~iri]
+
+  film_spoken_language:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].spoken_languages[*]"]
+    s: res:film/$(movie_id)
+    po:
+      - [kl:spokenLanguage, res:language/$(iso_639_1)~iri]
+
+  country:
+    sources:
+      - [data/interim/countries.json~jsonpath, "$[*]"]
+    s: res:country/$(iso)
+    po:
+      - [a, kl:Country]
+      - [schema:name, $(name), xsd:string]
+      - [kl:isoCode, $(iso), xsd:string]
+      - [owl:sameAs, wd:$(wikidata_id)~iri]
+
+  language:
+    sources:
+      - [data/interim/languages.json~jsonpath, "$[*]"]
+    s: res:language/$(iso)
+    po:
+      - [a, kl:Language]
+      - [schema:name, $(name), xsd:string]
+      - [kl:isoCode, $(iso), xsd:string]
+      - [owl:sameAs, wd:$(wikidata_id)~iri]
+
+  person:
+    sources:
+      - [data/interim/persons.json~jsonpath, "$[*]"]
+    s: res:person/$(tmdb_id)
+    po:
+      - [a, kl:Person]
+      - [schema:name, $(name), xsd:string]
+      - [kl:tmdbId, $(tmdb_id), xsd:integer]
+      - [schema:gender, $(gender), xsd:string]
+      - [owl:sameAs, wd:$(wikidata_id)~iri]
+
+  film_cast:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].cast[*]"]
+    s: res:film/$(movie_id)
+    po:
+      - [schema:actor, res:person/$(person_id)~iri]
+      - [kl:hasCastCredit, res:credit/$(credit_id)~iri]
+
+  cast_credit:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].cast[*]"]
+    s: res:credit/$(credit_id)
+    po:
+      - [a, kl:CastCredit]
+      - [kl:creditedPerson, res:person/$(person_id)~iri]
+      - [kl:characterName, $(character), xsd:string]
+      - [kl:castOrder, $(order), xsd:integer]
+
+  film_director:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].directors[*]"]
+    s: res:film/$(movie_id)
+    po:
+      - [schema:director, res:person/$(person_id)~iri]
+      - [kl:hasCrewCredit, res:credit/$(credit_id)~iri]
+
+  film_writer:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].writers[*]"]
+    s: res:film/$(movie_id)
+    po:
+      - [kl:writer, res:person/$(person_id)~iri]
+      - [kl:hasCrewCredit, res:credit/$(credit_id)~iri]
+
+  crew_credit:
+    sources:
+      - [data/interim/movies.json~jsonpath, "$[*].directors[*]"]
+      - [data/interim/movies.json~jsonpath, "$[*].writers[*]"]
+    s: res:credit/$(credit_id)
+    po:
+      - [a, kl:CrewCredit]
+      - [kl:creditedPerson, res:person/$(person_id)~iri]
+      - [kl:job, $(job), xsd:string]
+      - [kl:department, $(department), xsd:string]

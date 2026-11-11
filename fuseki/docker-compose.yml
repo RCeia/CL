@@ -1,0 +1,19 @@
+services:
+  fuseki:
+    build:
+      context: .
+      args:
+        FUSEKI_VERSION: "6.2.0"
+    image: klkg-fuseki:6.2.0
+    container_name: klkg-fuseki
+    ports:
+      - "127.0.0.1:${FUSEKI_PORT:-3030}:3030"
+    environment:
+      JVM_ARGS: "${FUSEKI_JVM_ARGS:--Xmx2g}"
+    volumes:
+      - ./kl_dataset_config.ttl:/fuseki/config/kl_dataset_config.ttl:ro
+      - fuseki-databases:/fuseki/databases
+    restart: unless-stopped
+
+volumes:
+  fuseki-databases:

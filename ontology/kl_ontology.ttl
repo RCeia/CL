@@ -1,0 +1,85 @@
+@prefix kl: <http://example.org/kl/ontology#> .
+@prefix klc: <http://example.org/kl/concept/> .
+@prefix schema: <http://schema.org/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+<http://example.org/kl/ontology> a owl:Ontology ;
+    rdfs:label "Knowledge and Language movie ontology"@en ;
+    dcterms:description "Classes and relations for a TMDB-derived movie knowledge graph enriched with LLM-extracted plot facts. Reuses schema.org where it fits."@en ;
+    owl:versionInfo "0.1.0" .
+
+kl:Film a owl:Class ; rdfs:subClassOf schema:Movie ; rdfs:label "Film"@en .
+kl:Person a owl:Class ; rdfs:subClassOf schema:Person ; rdfs:label "Person"@en .
+kl:Genre a owl:Class ; rdfs:label "Genre"@en .
+kl:Keyword a owl:Class ; rdfs:label "Keyword"@en ; rdfs:comment "A TMDB keyword attached to a film."@en .
+kl:ProductionCompany a owl:Class ; rdfs:subClassOf schema:Organization ; rdfs:label "Production company"@en .
+kl:Country a owl:Class ; rdfs:subClassOf schema:Country ; rdfs:label "Country"@en .
+kl:Language a owl:Class ; rdfs:subClassOf schema:Language ; rdfs:label "Language"@en .
+kl:FilmCollection a owl:Class ; rdfs:subClassOf schema:CreativeWorkSeries ; rdfs:label "Film collection"@en .
+kl:Credit a owl:Class ; rdfs:label "Credit"@en ; rdfs:comment "A person's participation in a film, kept as an n-ary node."@en .
+kl:CastCredit a owl:Class ; rdfs:subClassOf kl:Credit ; rdfs:label "Cast credit"@en .
+kl:CrewCredit a owl:Class ; rdfs:subClassOf kl:Credit ; rdfs:label "Crew credit"@en .
+
+schema:name a owl:DatatypeProperty ; rdfs:label "name"@en .
+schema:datePublished a owl:DatatypeProperty ; rdfs:label "release date"@en .
+schema:gender a owl:DatatypeProperty ; rdfs:label "gender"@en .
+schema:actor a owl:ObjectProperty ; rdfs:domain kl:Film ; rdfs:range kl:Person ; rdfs:label "actor"@en .
+schema:director a owl:ObjectProperty ; rdfs:domain kl:Film ; rdfs:range kl:Person ; rdfs:label "director"@en .
+schema:genre a owl:ObjectProperty ; rdfs:domain kl:Film ; rdfs:range kl:Genre ; rdfs:label "genre"@en .
+schema:keywords a owl:ObjectProperty ; rdfs:domain kl:Film ; rdfs:range kl:Keyword ; rdfs:label "keyword"@en .
+schema:productionCompany a owl:ObjectProperty ; rdfs:domain kl:Film ; rdfs:range kl:ProductionCompany ; rdfs:label "production company"@en .
+schema:countryOfOrigin a owl:ObjectProperty ; rdfs:domain kl:Film ; rdfs:range kl:Country ; rdfs:label "production country"@en .
+schema:inLanguage a owl:ObjectProperty ; rdfs:domain kl:Film ; rdfs:range kl:Language ; rdfs:label "original language"@en .
+schema:isPartOf a owl:ObjectProperty ; rdfs:label "part of"@en .
+
+kl:writer a owl:ObjectProperty ; rdfs:subPropertyOf schema:author ; rdfs:domain kl:Film ; rdfs:range kl:Person ;
+    rdfs:label "writer"@en ; rdfs:comment "Any member of the TMDB Writing department."@en .
+kl:spokenLanguage a owl:ObjectProperty ; rdfs:domain kl:Film ; rdfs:range kl:Language ; rdfs:label "spoken language"@en .
+kl:hasCredit a owl:ObjectProperty ; rdfs:domain kl:Film ; rdfs:range kl:Credit ; rdfs:label "has credit"@en .
+kl:hasCastCredit a owl:ObjectProperty ; rdfs:subPropertyOf kl:hasCredit ; rdfs:range kl:CastCredit ; rdfs:label "has cast credit"@en .
+kl:hasCrewCredit a owl:ObjectProperty ; rdfs:subPropertyOf kl:hasCredit ; rdfs:range kl:CrewCredit ; rdfs:label "has crew credit"@en .
+kl:creditedPerson a owl:ObjectProperty , owl:FunctionalProperty ; rdfs:domain kl:Credit ; rdfs:range kl:Person ; rdfs:label "credited person"@en .
+
+kl:tmdbId a owl:DatatypeProperty ; rdfs:range xsd:integer ; rdfs:label "TMDB ID"@en .
+kl:imdbId a owl:DatatypeProperty ; rdfs:domain kl:Film ; rdfs:range xsd:string ; rdfs:label "IMDb ID"@en .
+kl:isoCode a owl:DatatypeProperty ; rdfs:range xsd:string ; rdfs:label "ISO code"@en .
+kl:originalTitle a owl:DatatypeProperty ; rdfs:domain kl:Film ; rdfs:range xsd:string ; rdfs:label "original title"@en .
+kl:runtimeMinutes a owl:DatatypeProperty ; rdfs:domain kl:Film ; rdfs:range xsd:integer ; rdfs:label "runtime in minutes"@en .
+kl:budget a owl:DatatypeProperty ; rdfs:domain kl:Film ; rdfs:range xsd:integer ; rdfs:label "budget in USD"@en .
+kl:revenue a owl:DatatypeProperty ; rdfs:domain kl:Film ; rdfs:range xsd:integer ; rdfs:label "revenue in USD"@en .
+kl:voteAverage a owl:DatatypeProperty ; rdfs:domain kl:Film ; rdfs:range xsd:decimal ; rdfs:label "TMDB vote average"@en .
+kl:voteCount a owl:DatatypeProperty ; rdfs:domain kl:Film ; rdfs:range xsd:integer ; rdfs:label "TMDB vote count"@en .
+kl:characterName a owl:DatatypeProperty ; rdfs:domain kl:CastCredit ; rdfs:range xsd:string ; rdfs:label "character name"@en .
+kl:castOrder a owl:DatatypeProperty ; rdfs:domain kl:CastCredit ; rdfs:range xsd:integer ; rdfs:label "billing order"@en .
+kl:job a owl:DatatypeProperty ; rdfs:domain kl:CrewCredit ; rdfs:range xsd:string ; rdfs:label "job"@en .
+kl:department a owl:DatatypeProperty ; rdfs:domain kl:CrewCredit ; rdfs:range xsd:string ; rdfs:label "department"@en .
+
+kl:plotRelation a owl:ObjectProperty ; rdfs:domain kl:Film ; rdfs:range skos:Concept ;
+    rdfs:label "plot relation"@en ;
+    rdfs:comment "Super-property of the relations extracted from synopses. Values live in the enriched graph."@en .
+kl:valueScheme a owl:AnnotationProperty ; rdfs:label "value scheme"@en ;
+    rdfs:comment "The SKOS concept scheme whose concepts are the allowed values of a plot relation."@en .
+
+kl:protagonistOccupation a owl:ObjectProperty ; rdfs:subPropertyOf kl:plotRelation ;
+    rdfs:label "protagonist occupation"@en ; kl:valueScheme klc:occupation .
+kl:protagonistGoal a owl:ObjectProperty ; rdfs:subPropertyOf kl:plotRelation ;
+    rdfs:label "protagonist goal"@en ; kl:valueScheme klc:goal .
+kl:protagonistAgeGroup a owl:ObjectProperty ; rdfs:subPropertyOf kl:plotRelation ;
+    rdfs:label "protagonist age group"@en ; kl:valueScheme klc:age-group .
+kl:antagonistType a owl:ObjectProperty ; rdfs:subPropertyOf kl:plotRelation ;
+    rdfs:label "antagonist type"@en ; kl:valueScheme klc:antagonist .
+kl:plotEvent a owl:ObjectProperty ; rdfs:subPropertyOf kl:plotRelation ;
+    rdfs:label "plot event"@en ; kl:valueScheme klc:event .
+kl:theme a owl:ObjectProperty ; rdfs:subPropertyOf kl:plotRelation ;
+    rdfs:label "theme"@en ; kl:valueScheme klc:theme .
+kl:narrativeLocation a owl:ObjectProperty ; rdfs:subPropertyOf kl:plotRelation ;
+    rdfs:label "narrative location"@en ; kl:valueScheme klc:location .
+kl:settingEnvironment a owl:ObjectProperty ; rdfs:subPropertyOf kl:plotRelation ;
+    rdfs:label "setting environment"@en ; kl:valueScheme klc:environment .
+kl:timePeriod a owl:ObjectProperty ; rdfs:subPropertyOf kl:plotRelation ;
+    rdfs:label "time period"@en ; kl:valueScheme klc:time-period .

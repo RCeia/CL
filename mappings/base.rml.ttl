@@ -1,0 +1,491 @@
+@prefix map: <http://example.org/kl/mapping#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rml: <http://w3id.org/rml/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+map:cast_credit_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].cast[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:constant <http://example.org/kl/ontology#CastCredit> ] ;
+            rml:predicateMap [ rml:constant rdf:type ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ] .
+
+map:cast_credit_-_-_sources0_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*].cast[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/person/{person_id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#creditedPerson> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ] .
+
+map:cast_credit_-_-_sources0_-_-_predicateobjects2 rml:logicalSource [ rml:iterator "$[*].cast[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "character" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#characterName> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ] .
+
+map:cast_credit_-_-_sources0_-_-_predicateobjects3 rml:logicalSource [ rml:iterator "$[*].cast[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:integer ;
+                    rml:reference "order" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#castOrder> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ] .
+
+map:collection_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].collections[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:constant <http://example.org/kl/ontology#FilmCollection> ] ;
+            rml:predicateMap [ rml:constant rdf:type ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/collection/{id}" ] .
+
+map:collection_-_-_sources0_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*].collections[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "name" ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/name> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/collection/{id}" ] .
+
+map:collection_-_-_sources0_-_-_predicateobjects2 rml:logicalSource [ rml:iterator "$[*].collections[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:integer ;
+                    rml:reference "id" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#tmdbId> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/collection/{id}" ] .
+
+map:company_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].production_companies[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:constant <http://example.org/kl/ontology#ProductionCompany> ] ;
+            rml:predicateMap [ rml:constant rdf:type ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/company/{id}" ] .
+
+map:company_-_-_sources0_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*].production_companies[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "name" ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/name> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/company/{id}" ] .
+
+map:company_-_-_sources0_-_-_predicateobjects2 rml:logicalSource [ rml:iterator "$[*].production_companies[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:integer ;
+                    rml:reference "id" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#tmdbId> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/company/{id}" ] .
+
+map:country_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/countries.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:constant <http://example.org/kl/ontology#Country> ] ;
+            rml:predicateMap [ rml:constant rdf:type ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/country/{iso}" ] .
+
+map:country_-_-_sources0_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/countries.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "name" ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/name> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/country/{iso}" ] .
+
+map:country_-_-_sources0_-_-_predicateobjects2 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/countries.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "iso" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#isoCode> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/country/{iso}" ] .
+
+map:country_-_-_sources0_-_-_predicateobjects3 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/countries.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://www.wikidata.org/entity/{wikidata_id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant owl:sameAs ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/country/{iso}" ] .
+
+map:crew_credit_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].directors[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:constant <http://example.org/kl/ontology#CrewCredit> ] ;
+            rml:predicateMap [ rml:constant rdf:type ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ] .
+
+map:crew_credit_-_-_sources0_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*].directors[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/person/{person_id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#creditedPerson> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ] .
+
+map:crew_credit_-_-_sources0_-_-_predicateobjects2 rml:logicalSource [ rml:iterator "$[*].directors[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "job" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#job> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ] .
+
+map:crew_credit_-_-_sources0_-_-_predicateobjects3 rml:logicalSource [ rml:iterator "$[*].directors[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "department" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#department> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ] .
+
+map:crew_credit_-_-_sources1_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].writers[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:constant <http://example.org/kl/ontology#CrewCredit> ] ;
+            rml:predicateMap [ rml:constant rdf:type ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ] .
+
+map:crew_credit_-_-_sources1_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*].writers[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/person/{person_id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#creditedPerson> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ] .
+
+map:crew_credit_-_-_sources1_-_-_predicateobjects2 rml:logicalSource [ rml:iterator "$[*].writers[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "job" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#job> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ] .
+
+map:crew_credit_-_-_sources1_-_-_predicateobjects3 rml:logicalSource [ rml:iterator "$[*].writers[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "department" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#department> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ] .
+
+map:film_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:constant <http://example.org/kl/ontology#Film> ] ;
+            rml:predicateMap [ rml:constant rdf:type ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{tmdb_id}" ] .
+
+map:film_-_-_sources0_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "title" ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/name> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{tmdb_id}" ] .
+
+map:film_-_-_sources0_-_-_predicateobjects10 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:integer ;
+                    rml:reference "vote_count" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#voteCount> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{tmdb_id}" ] .
+
+map:film_-_-_sources0_-_-_predicateobjects11 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/language/{original_language}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/inLanguage> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{tmdb_id}" ] .
+
+map:film_-_-_sources0_-_-_predicateobjects12 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://www.wikidata.org/entity/{wikidata_id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant owl:sameAs ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{tmdb_id}" ] .
+
+map:film_-_-_sources0_-_-_predicateobjects2 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "original_title" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#originalTitle> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{tmdb_id}" ] .
+
+map:film_-_-_sources0_-_-_predicateobjects3 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:integer ;
+                    rml:reference "tmdb_id" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#tmdbId> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{tmdb_id}" ] .
+
+map:film_-_-_sources0_-_-_predicateobjects4 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "imdb_id" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#imdbId> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{tmdb_id}" ] .
+
+map:film_-_-_sources0_-_-_predicateobjects5 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:date ;
+                    rml:reference "release_date" ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/datePublished> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{tmdb_id}" ] .
+
+map:film_-_-_sources0_-_-_predicateobjects6 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:integer ;
+                    rml:reference "runtime" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#runtimeMinutes> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{tmdb_id}" ] .
+
+map:film_-_-_sources0_-_-_predicateobjects7 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:integer ;
+                    rml:reference "budget" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#budget> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{tmdb_id}" ] .
+
+map:film_-_-_sources0_-_-_predicateobjects8 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:integer ;
+                    rml:reference "revenue" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#revenue> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{tmdb_id}" ] .
+
+map:film_-_-_sources0_-_-_predicateobjects9 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:decimal ;
+                    rml:reference "vote_average" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#voteAverage> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{tmdb_id}" ] .
+
+map:film_cast_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].cast[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/person/{person_id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/actor> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{movie_id}" ] .
+
+map:film_cast_-_-_sources0_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*].cast[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#hasCastCredit> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{movie_id}" ] .
+
+map:film_collection_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].collections[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/collection/{id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/isPartOf> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{movie_id}" ] .
+
+map:film_company_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].production_companies[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/company/{id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/productionCompany> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{movie_id}" ] .
+
+map:film_country_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].production_countries[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/country/{iso_3166_1}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/countryOfOrigin> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{movie_id}" ] .
+
+map:film_director_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].directors[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/person/{person_id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/director> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{movie_id}" ] .
+
+map:film_director_-_-_sources0_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*].directors[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#hasCrewCredit> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{movie_id}" ] .
+
+map:film_genre_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].genres[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/genre/{id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/genre> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{movie_id}" ] .
+
+map:film_keyword_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].keywords[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/keyword/{id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/keywords> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{movie_id}" ] .
+
+map:film_spoken_language_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].spoken_languages[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/language/{iso_639_1}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#spokenLanguage> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{movie_id}" ] .
+
+map:film_writer_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].writers[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/person/{person_id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#writer> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{movie_id}" ] .
+
+map:film_writer_-_-_sources0_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*].writers[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://example.org/kl/resource/credit/{credit_id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#hasCrewCredit> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/film/{movie_id}" ] .
+
+map:genre_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].genres[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:constant <http://example.org/kl/ontology#Genre> ] ;
+            rml:predicateMap [ rml:constant rdf:type ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/genre/{id}" ] .
+
+map:genre_-_-_sources0_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*].genres[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "name" ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/name> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/genre/{id}" ] .
+
+map:genre_-_-_sources0_-_-_predicateobjects2 rml:logicalSource [ rml:iterator "$[*].genres[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:integer ;
+                    rml:reference "id" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#tmdbId> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/genre/{id}" ] .
+
+map:keyword_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*].keywords[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:constant <http://example.org/kl/ontology#Keyword> ] ;
+            rml:predicateMap [ rml:constant rdf:type ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/keyword/{id}" ] .
+
+map:keyword_-_-_sources0_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*].keywords[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "name" ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/name> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/keyword/{id}" ] .
+
+map:keyword_-_-_sources0_-_-_predicateobjects2 rml:logicalSource [ rml:iterator "$[*].keywords[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/movies.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:integer ;
+                    rml:reference "id" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#tmdbId> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/keyword/{id}" ] .
+
+map:language_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/languages.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:constant <http://example.org/kl/ontology#Language> ] ;
+            rml:predicateMap [ rml:constant rdf:type ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/language/{iso}" ] .
+
+map:language_-_-_sources0_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/languages.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "name" ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/name> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/language/{iso}" ] .
+
+map:language_-_-_sources0_-_-_predicateobjects2 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/languages.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "iso" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#isoCode> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/language/{iso}" ] .
+
+map:language_-_-_sources0_-_-_predicateobjects3 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/languages.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://www.wikidata.org/entity/{wikidata_id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant owl:sameAs ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/language/{iso}" ] .
+
+map:person_-_-_sources0_-_-_predicateobjects0 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/persons.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:constant <http://example.org/kl/ontology#Person> ] ;
+            rml:predicateMap [ rml:constant rdf:type ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/person/{tmdb_id}" ] .
+
+map:person_-_-_sources0_-_-_predicateobjects1 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/persons.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "name" ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/name> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/person/{tmdb_id}" ] .
+
+map:person_-_-_sources0_-_-_predicateobjects2 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/persons.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:integer ;
+                    rml:reference "tmdb_id" ] ;
+            rml:predicateMap [ rml:constant <http://example.org/kl/ontology#tmdbId> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/person/{tmdb_id}" ] .
+
+map:person_-_-_sources0_-_-_predicateobjects3 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/persons.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:datatype xsd:string ;
+                    rml:reference "gender" ] ;
+            rml:predicateMap [ rml:constant <http://schema.org/gender> ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/person/{tmdb_id}" ] .
+
+map:person_-_-_sources0_-_-_predicateobjects4 rml:logicalSource [ rml:iterator "$[*]" ;
+            rml:referenceFormulation rml:JSONPath ;
+            rml:source "data/interim/persons.json" ] ;
+    rml:predicateObjectMap [ rml:objectMap [ rml:template "http://www.wikidata.org/entity/{wikidata_id}" ;
+                    rml:termType rml:IRI ] ;
+            rml:predicateMap [ rml:constant owl:sameAs ] ] ;
+    rml:subjectMap [ rml:template "http://example.org/kl/resource/person/{tmdb_id}" ] .
+

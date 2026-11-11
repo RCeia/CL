@@ -1,0 +1,17 @@
+[
+  {
+    "iso_639_1": "en",
+    "english_name": "English",
+    "name": "English"
+  },
+  {
+    "iso_639_1": "es",
+    "english_name": "Spanish",
+    "name": "Español"
+  },
+  {
+    "iso_639_1": "xx",
+    "english_name": "No Language",
+    "name": "No Language"
+  }
+]

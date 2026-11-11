@@ -1,0 +1,198 @@
+{
+  "id": 900001,
+  "title": "Fixture Film One",
+  "original_title": "Fixture Film One",
+  "overview": "A retired detective returns to the city to solve one last case.",
+  "release_date": "2001-05-04",
+  "runtime": 118,
+  "budget": 40000000,
+  "revenue": 120000000,
+  "vote_average": 7.4,
+  "vote_count": 5000,
+  "original_language": "en",
+  "imdb_id": "tt9000001",
+  "belongs_to_collection": {
+    "id": 77001,
+    "name": "Fixture Collection"
+  },
+  "genres": [
+    {
+      "id": 80,
+      "name": "Crime"
+    },
+    {
+      "id": 18,
+      "name": "Drama"
+    }
+  ],
+  "production_companies": [
+    {
+      "id": 5001,
+      "name": "Fixture Pictures",
+      "origin_country": "US"
+    }
+  ],
+  "production_countries": [
+    {
+      "iso_3166_1": "US",
+      "name": "United States of America"
+    }
+  ],
+  "spoken_languages": [
+    {
+      "iso_639_1": "en",
+      "english_name": "English",
+      "name": "English"
+    }
+  ],
+  "keywords": {
+    "keywords": [
+      {
+        "id": 9001,
+        "name": "detective"
+      },
+      {
+        "id": 9002,
+        "name": "nan"
+      }
+    ]
+  },
+  "external_ids": {
+    "imdb_id": "tt9000001",
+    "wikidata_id": "Q999000001"
+  },
+  "credits": {
+    "cast": [
+      {
+        "id": 100,
+        "name": "Actor 0",
+        "gender": 2,
+        "order": 0,
+        "character": "Character 0",
+        "credit_id": "c100x0"
+      },
+      {
+        "id": 101,
+        "name": "Actor 1",
+        "gender": 1,
+        "order": 1,
+        "character": "Character 1",
+        "credit_id": "c101x1"
+      },
+      {
+        "id": 102,
+        "name": "Actor 2",
+        "gender": 2,
+        "order": 2,
+        "character": "Character 2",
+        "credit_id": "c102x2"
+      },
+      {
+        "id": 103,
+        "name": "Actor 3",
+        "gender": 1,
+        "order": 3,
+        "character": "",
+        "credit_id": "c103x3"
+      },
+      {
+        "id": 104,
+        "name": "Actor 4",
+        "gender": 2,
+        "order": 4,
+        "character": "Character 4",
+        "credit_id": "c104x4"
+      },
+      {
+        "id": 105,
+        "name": "Actor 5",
+        "gender": 1,
+        "order": 5,
+        "character": "Character 5",
+        "credit_id": "c105x5"
+      },
+      {
+        "id": 106,
+        "name": "Actor 6",
+        "gender": 2,
+        "order": 6,
+        "character": "Character 6",
+        "credit_id": "c106x6"
+      },
+      {
+        "id": 107,
+        "name": "Actor 7",
+        "gender": 1,
+        "order": 7,
+        "character": "Character 7",
+        "credit_id": "c107x7"
+      },
+      {
+        "id": 108,
+        "name": "Actor 8",
+        "gender": 2,
+        "order": 8,
+        "character": "Character 8",
+        "credit_id": "c108x8"
+      },
+      {
+        "id": 109,
+        "name": "Actor 9",
+        "gender": 1,
+        "order": 9,
+        "character": "Character 9",
+        "credit_id": "c109x9"
+      },
+      {
+        "id": 110,
+        "name": "Actor 10",
+        "gender": 2,
+        "order": 10,
+        "character": "Character 10",
+        "credit_id": "c110x10"
+      },
+      {
+        "id": 111,
+        "name": "Actor 11",
+        "gender": 1,
+        "order": 11,
+        "character": "Character 11",
+        "credit_id": "c111x11"
+      }
+    ],
+    "crew": [
+      {
+        "id": 200,
+        "name": "Director Person",
+        "gender": 1,
+        "job": "Director",
+        "department": "Directing",
+        "credit_id": "w200dir"
+      },
+      {
+        "id": 200,
+        "name": "Director Person",
+        "gender": 1,
+        "job": "Screenplay",
+        "department": "Writing",
+        "credit_id": "w200scr"
+      },
+      {
+        "id": 201,
+        "name": "Novel Author",
+        "gender": 0,
+        "job": "Novel",
+        "department": "Writing",
+        "credit_id": "w201nov"
+      },
+      {
+        "id": 202,
+        "name": "Producer Person",
+        "gender": 1,
+        "job": "Producer",
+        "department": "Production",
+        "credit_id": "w202pro"
+      }
+    ]
+  }
+}

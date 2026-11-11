@@ -1,0 +1,13 @@
+{
+  "aligned": {
+    "900001": {
+      "qid": "Q999000001",
+      "source": "wikidata_p4947"
+    },
+    "900002": {
+      "qid": "Q999000002",
+      "source": "wikidata_p4947"
+    }
+  },
+  "conflicts": []
+}

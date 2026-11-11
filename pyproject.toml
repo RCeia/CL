@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "klkg"
+version = "0.1.0"
+description = "Enriching a Movie Knowledge Graph with LLM-Extracted Plot Facts"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "requests==2.34.2",
+  "python-dotenv==1.2.4",
+  "pyyaml==6.0.3",
+  "rdflib==7.2.1",
+  "pyshacl==0.31.0",
+  "morph-kgc==2.10.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.2.0"]
+llm = ["vllm==0.33.0"]
+
+[project.scripts]
+klkg-collect = "klkg.collection.collect_movies:main"
+klkg-align = "klkg.collection.wikidata_alignment:main"
+klkg-prepare = "klkg.collection.prepare_mapping_input:main"
+klkg-pilot = "klkg.pilot.throughput_pilot:main"
+klkg-build-base = "klkg.kg.build_base_kg:main"
+klkg-validate = "klkg.kg.validate_shacl:main"
+klkg-load = "klkg.kg.fuseki_loader:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

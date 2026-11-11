@@ -1,0 +1,87 @@
+paths:
+  raw_tmdb: data/raw/tmdb
+  raw_wikidata: data/raw/wikidata
+  interim: data/interim
+  rdf: data/rdf
+  extraction_runs: data/extraction/runs
+  reports_pilot: reports/pilot
+  reports_shacl: reports/shacl
+  ontology: ontology/kl_ontology.ttl
+  plot_vocabulary: ontology/plot_vocabulary.ttl
+  base_shapes: ontology/shapes/base_shapes.ttl
+  yarrrml_mapping: mappings/base.yarrrml.yml
+  rml_mapping: mappings/base.rml.ttl
+  morph_kgc_config: mappings/morph_kgc.ini
+  extraction_prompt: config/prompts/extraction_prompt.txt
+
+tmdb:
+  base_url: https://api.themoviedb.org/3
+  language: en-US
+  requests_per_second: 20
+  workers: 8
+  max_retries: 5
+  timeout_seconds: 30
+  append_to_response: [credits, keywords, external_ids]
+
+collection:
+  candidate_pool_size: 3000
+  sort_by: vote_count.desc
+  release_year_min: 1980
+  release_year_max: 2025
+  original_language: null
+  min_vote_count: null
+  include_adult: false
+  include_video: false
+  require_overview: true
+
+dataset:
+  final_size: null
+  max_cast_members: 10
+  director_jobs: [Director]
+  writer_departments: [Writing]
+
+wikidata:
+  sparql_endpoint: https://query.wikidata.org/sparql
+  contact: https://github.com/RCeia/CL
+  batch_size: 200
+  min_interval_seconds: 1.0
+  max_retries: 5
+  timeout_seconds: 120
+
+iris:
+  resource: http://example.org/kl/resource/
+  ontology: http://example.org/kl/ontology#
+  concept: http://example.org/kl/concept/
+  wikidata_entity: http://www.wikidata.org/entity/
+
+graphs:
+  base: http://example.org/graph/base
+  enriched: http://example.org/graph/enriched
+  ontology: http://example.org/graph/ontology
+
+fuseki:
+  url: http://localhost:3030
+  dataset: kl
+  query_endpoint: sparql
+  update_endpoint: update
+  gsp_endpoint: data
+  timeout_seconds: 600
+
+llm:
+  base_url: http://localhost:8000/v1
+  model: Qwen/Qwen2.5-7B-Instruct-AWQ
+  temperature: 0.7
+  top_p: 0.95
+  max_tokens: 512
+  samples_per_synopsis: 5
+  supports_n: true
+  seed: 2026
+  timeout_seconds: 300
+
+extraction:
+  max_values_per_relation: 3
+
+pilot:
+  sample_size: 100
+  concurrency: 8
+  projected_sizes: [2000, 2500, 3000]

@@ -1,0 +1,159 @@
+@prefix klc: <http://example.org/kl/concept/> .
+@prefix occupation: <http://example.org/kl/concept/occupation/> .
+@prefix goal: <http://example.org/kl/concept/goal/> .
+@prefix age: <http://example.org/kl/concept/age-group/> .
+@prefix antagonist: <http://example.org/kl/concept/antagonist/> .
+@prefix event: <http://example.org/kl/concept/event/> .
+@prefix theme: <http://example.org/kl/concept/theme/> .
+@prefix location: <http://example.org/kl/concept/location/> .
+@prefix environment: <http://example.org/kl/concept/environment/> .
+@prefix period: <http://example.org/kl/concept/time-period/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix wd: <http://www.wikidata.org/entity/> .
+
+klc:occupation a skos:ConceptScheme ; skos:prefLabel "Protagonist occupations"@en ;
+    skos:editorialNote "Seed concepts for the pilot; curate from data/interim/keyword_frequencies.json."@en .
+klc:goal a skos:ConceptScheme ; skos:prefLabel "Protagonist goals"@en ;
+    skos:editorialNote "Seed concepts for the pilot; curate from data/interim/keyword_frequencies.json."@en .
+klc:age-group a skos:ConceptScheme ; skos:prefLabel "Protagonist age groups"@en .
+klc:antagonist a skos:ConceptScheme ; skos:prefLabel "Antagonist types"@en ;
+    skos:editorialNote "Seed concepts for the pilot; curate from data/interim/keyword_frequencies.json."@en .
+klc:event a skos:ConceptScheme ; skos:prefLabel "Plot events"@en ;
+    skos:editorialNote "Seed concepts for the pilot; curate from data/interim/keyword_frequencies.json."@en .
+klc:theme a skos:ConceptScheme ; skos:prefLabel "Themes"@en ;
+    skos:editorialNote "Seed concepts for the pilot; curate from data/interim/keyword_frequencies.json."@en .
+klc:location a skos:ConceptScheme ; skos:prefLabel "Narrative locations"@en ;
+    skos:editorialNote "Countries and cities aligned to Wikidata with skos:exactMatch; extend from Wikidata P840 values of the snapshot."@en .
+klc:environment a skos:ConceptScheme ; skos:prefLabel "Setting environments"@en ;
+    skos:editorialNote "Seed concepts for the pilot; curate from data/interim/keyword_frequencies.json."@en .
+klc:time-period a skos:ConceptScheme ; skos:prefLabel "Time periods"@en ;
+    skos:editorialNote "Seed concepts for the pilot; curate from data/interim/keyword_frequencies.json."@en .
+
+occupation:journalist a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "journalist"@en ; skos:altLabel "reporter"@en .
+occupation:police-officer a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "police officer"@en ; skos:altLabel "cop"@en , "policeman"@en , "policewoman"@en .
+occupation:detective a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "detective"@en ; skos:altLabel "private investigator"@en .
+occupation:teacher a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "teacher"@en ; skos:altLabel "professor"@en .
+occupation:doctor a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "doctor"@en ; skos:altLabel "physician"@en , "surgeon"@en .
+occupation:lawyer a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "lawyer"@en ; skos:altLabel "attorney"@en .
+occupation:soldier a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "soldier"@en ; skos:altLabel "marine"@en .
+occupation:scientist a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "scientist"@en .
+occupation:spy a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "spy"@en ; skos:altLabel "secret agent"@en .
+occupation:criminal a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "criminal"@en ; skos:altLabel "thief"@en , "gangster"@en .
+occupation:assassin a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "assassin"@en ; skos:altLabel "hitman"@en .
+occupation:student a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "student"@en .
+occupation:writer a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "writer"@en ; skos:altLabel "novelist"@en .
+occupation:musician a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "musician"@en ; skos:altLabel "singer"@en .
+occupation:athlete a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "athlete"@en ; skos:altLabel "boxer"@en .
+occupation:politician a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "politician"@en .
+occupation:businessperson a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "businessperson"@en ; skos:altLabel "businessman"@en , "businesswoman"@en .
+occupation:astronaut a skos:Concept ; skos:inScheme klc:occupation ; skos:prefLabel "astronaut"@en .
+
+goal:revenge a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "revenge"@en ; skos:altLabel "vengeance"@en .
+goal:rescue a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "rescue"@en ; skos:altLabel "save someone"@en .
+goal:escape a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "escape"@en .
+goal:survival a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "survival"@en .
+goal:justice a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "justice"@en .
+goal:love a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "love"@en ; skos:altLabel "romance"@en .
+goal:wealth a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "wealth"@en ; skos:altLabel "money"@en .
+goal:power a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "power"@en .
+goal:truth a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "uncover the truth"@en ; skos:altLabel "solve a mystery"@en .
+goal:protection a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "protect someone"@en .
+goal:return-home a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "return home"@en .
+goal:success a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "success"@en ; skos:altLabel "win a competition"@en .
+goal:freedom a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "freedom"@en .
+goal:save-the-world a skos:Concept ; skos:inScheme klc:goal ; skos:prefLabel "save the world"@en .
+
+age:child a skos:Concept ; skos:inScheme klc:age-group ; skos:prefLabel "child"@en .
+age:teenager a skos:Concept ; skos:inScheme klc:age-group ; skos:prefLabel "teenager"@en ; skos:altLabel "adolescent"@en .
+age:young-adult a skos:Concept ; skos:inScheme klc:age-group ; skos:prefLabel "young adult"@en .
+age:adult a skos:Concept ; skos:inScheme klc:age-group ; skos:prefLabel "adult"@en .
+age:elderly a skos:Concept ; skos:inScheme klc:age-group ; skos:prefLabel "elderly"@en ; skos:altLabel "senior"@en .
+
+antagonist:criminal-organisation a skos:Concept ; skos:inScheme klc:antagonist ; skos:prefLabel "criminal organisation"@en ; skos:altLabel "mafia"@en , "cartel"@en , "gang"@en .
+antagonist:corrupt-official a skos:Concept ; skos:inScheme klc:antagonist ; skos:prefLabel "corrupt official"@en ; skos:altLabel "corrupt cop"@en .
+antagonist:monster a skos:Concept ; skos:inScheme klc:antagonist ; skos:prefLabel "monster"@en ; skos:altLabel "creature"@en .
+antagonist:serial-killer a skos:Concept ; skos:inScheme klc:antagonist ; skos:prefLabel "serial killer"@en .
+antagonist:supernatural-entity a skos:Concept ; skos:inScheme klc:antagonist ; skos:prefLabel "supernatural entity"@en ; skos:altLabel "demon"@en , "ghost"@en .
+antagonist:alien a skos:Concept ; skos:inScheme klc:antagonist ; skos:prefLabel "alien"@en ; skos:altLabel "extraterrestrial"@en .
+antagonist:artificial-intelligence a skos:Concept ; skos:inScheme klc:antagonist ; skos:prefLabel "artificial intelligence"@en ; skos:altLabel "robot"@en .
+antagonist:government a skos:Concept ; skos:inScheme klc:antagonist ; skos:prefLabel "government"@en ; skos:altLabel "regime"@en .
+antagonist:terrorist a skos:Concept ; skos:inScheme klc:antagonist ; skos:prefLabel "terrorist"@en .
+antagonist:rival a skos:Concept ; skos:inScheme klc:antagonist ; skos:prefLabel "rival"@en .
+antagonist:family-member a skos:Concept ; skos:inScheme klc:antagonist ; skos:prefLabel "family member"@en .
+antagonist:nature a skos:Concept ; skos:inScheme klc:antagonist ; skos:prefLabel "nature"@en ; skos:altLabel "natural disaster"@en .
+antagonist:supervillain a skos:Concept ; skos:inScheme klc:antagonist ; skos:prefLabel "supervillain"@en .
+
+event:heist a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "heist"@en ; skos:altLabel "robbery"@en .
+event:kidnapping a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "kidnapping"@en ; skos:altLabel "abduction"@en .
+event:murder a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "murder"@en ; skos:altLabel "killing"@en .
+event:war a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "war"@en ; skos:altLabel "battle"@en .
+event:prison-escape a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "prison escape"@en ; skos:altLabel "jailbreak"@en .
+event:betrayal a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "betrayal"@en .
+event:natural-disaster a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "natural disaster"@en .
+event:invasion a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "invasion"@en .
+event:investigation a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "investigation"@en .
+event:trial a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "trial"@en ; skos:altLabel "court case"@en .
+event:wedding a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "wedding"@en .
+event:death-of-loved-one a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "death of a loved one"@en .
+event:terrorist-attack a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "terrorist attack"@en .
+event:journey a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "journey"@en ; skos:altLabel "quest"@en , "road trip"@en .
+event:competition a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "competition"@en ; skos:altLabel "tournament"@en .
+event:time-travel a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "time travel"@en .
+event:epidemic a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "epidemic"@en ; skos:altLabel "outbreak"@en .
+event:con a skos:Concept ; skos:inScheme klc:event ; skos:prefLabel "con"@en ; skos:altLabel "swindle"@en .
+
+theme:family a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "family"@en .
+theme:friendship a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "friendship"@en .
+theme:redemption a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "redemption"@en .
+theme:identity a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "identity"@en .
+theme:love a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "love"@en .
+theme:coming-of-age a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "coming of age"@en .
+theme:corruption a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "corruption"@en ; skos:altLabel "abuse of power"@en .
+theme:sacrifice a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "sacrifice"@en .
+theme:loyalty a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "loyalty"@en .
+theme:grief a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "grief"@en ; skos:altLabel "loss"@en .
+theme:good-versus-evil a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "good versus evil"@en .
+theme:freedom a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "freedom"@en .
+theme:social-class a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "social class"@en ; skos:altLabel "inequality"@en .
+theme:faith a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "faith"@en ; skos:altLabel "religion"@en .
+theme:ambition a skos:Concept ; skos:inScheme klc:theme ; skos:prefLabel "ambition"@en .
+
+location:united-states a skos:Concept ; skos:inScheme klc:location ; skos:prefLabel "United States"@en ; skos:altLabel "USA"@en , "America"@en ; skos:exactMatch wd:Q30 .
+location:united-kingdom a skos:Concept ; skos:inScheme klc:location ; skos:prefLabel "United Kingdom"@en ; skos:altLabel "UK"@en , "Britain"@en ; skos:exactMatch wd:Q145 .
+location:france a skos:Concept ; skos:inScheme klc:location ; skos:prefLabel "France"@en ; skos:exactMatch wd:Q142 .
+location:italy a skos:Concept ; skos:inScheme klc:location ; skos:prefLabel "Italy"@en ; skos:exactMatch wd:Q38 .
+location:germany a skos:Concept ; skos:inScheme klc:location ; skos:prefLabel "Germany"@en ; skos:exactMatch wd:Q183 .
+location:japan a skos:Concept ; skos:inScheme klc:location ; skos:prefLabel "Japan"@en ; skos:exactMatch wd:Q17 .
+location:australia a skos:Concept ; skos:inScheme klc:location ; skos:prefLabel "Australia"@en ; skos:exactMatch wd:Q408 .
+location:new-york-city a skos:Concept ; skos:inScheme klc:location ; skos:prefLabel "New York City"@en ; skos:altLabel "New York"@en , "Manhattan"@en ; skos:broader location:united-states ; skos:exactMatch wd:Q60 .
+location:los-angeles a skos:Concept ; skos:inScheme klc:location ; skos:prefLabel "Los Angeles"@en ; skos:altLabel "LA"@en ; skos:broader location:united-states ; skos:exactMatch wd:Q65 .
+location:london a skos:Concept ; skos:inScheme klc:location ; skos:prefLabel "London"@en ; skos:broader location:united-kingdom ; skos:exactMatch wd:Q84 .
+location:paris a skos:Concept ; skos:inScheme klc:location ; skos:prefLabel "Paris"@en ; skos:broader location:france ; skos:exactMatch wd:Q90 .
+location:tokyo a skos:Concept ; skos:inScheme klc:location ; skos:prefLabel "Tokyo"@en ; skos:broader location:japan ; skos:exactMatch wd:Q1490 .
+
+environment:urban a skos:Concept ; skos:inScheme klc:environment ; skos:prefLabel "urban"@en ; skos:altLabel "city"@en .
+environment:rural a skos:Concept ; skos:inScheme klc:environment ; skos:prefLabel "rural"@en ; skos:altLabel "countryside"@en .
+environment:small-town a skos:Concept ; skos:inScheme klc:environment ; skos:prefLabel "small town"@en .
+environment:suburban a skos:Concept ; skos:inScheme klc:environment ; skos:prefLabel "suburban"@en ; skos:altLabel "suburbs"@en .
+environment:outer-space a skos:Concept ; skos:inScheme klc:environment ; skos:prefLabel "outer space"@en ; skos:altLabel "spaceship"@en .
+environment:at-sea a skos:Concept ; skos:inScheme klc:environment ; skos:prefLabel "at sea"@en ; skos:altLabel "ocean"@en , "ship"@en .
+environment:desert a skos:Concept ; skos:inScheme klc:environment ; skos:prefLabel "desert"@en .
+environment:jungle a skos:Concept ; skos:inScheme klc:environment ; skos:prefLabel "jungle"@en ; skos:altLabel "rainforest"@en .
+environment:mountains a skos:Concept ; skos:inScheme klc:environment ; skos:prefLabel "mountains"@en .
+environment:polar a skos:Concept ; skos:inScheme klc:environment ; skos:prefLabel "polar"@en ; skos:altLabel "arctic"@en , "antarctic"@en .
+environment:prison a skos:Concept ; skos:inScheme klc:environment ; skos:prefLabel "prison"@en .
+environment:school a skos:Concept ; skos:inScheme klc:environment ; skos:prefLabel "school"@en ; skos:altLabel "high school"@en , "college"@en .
+environment:fantasy-world a skos:Concept ; skos:inScheme klc:environment ; skos:prefLabel "fantasy world"@en .
+
+period:ancient a skos:Concept ; skos:inScheme klc:time-period ; skos:prefLabel "ancient times"@en ; skos:altLabel "antiquity"@en .
+period:medieval a skos:Concept ; skos:inScheme klc:time-period ; skos:prefLabel "medieval"@en ; skos:altLabel "middle ages"@en .
+period:early-modern a skos:Concept ; skos:inScheme klc:time-period ; skos:prefLabel "early modern period"@en .
+period:19th-century a skos:Concept ; skos:inScheme klc:time-period ; skos:prefLabel "19th century"@en ; skos:altLabel "Victorian era"@en , "Old West"@en .
+period:early-20th-century a skos:Concept ; skos:inScheme klc:time-period ; skos:prefLabel "early 20th century"@en .
+period:world-war-i a skos:Concept ; skos:inScheme klc:time-period ; skos:prefLabel "World War I"@en ; skos:altLabel "WWI"@en .
+period:world-war-ii a skos:Concept ; skos:inScheme klc:time-period ; skos:prefLabel "World War II"@en ; skos:altLabel "WWII"@en .
+period:cold-war a skos:Concept ; skos:inScheme klc:time-period ; skos:prefLabel "Cold War era"@en .
+period:late-20th-century a skos:Concept ; skos:inScheme klc:time-period ; skos:prefLabel "late 20th century"@en .
+period:present-day a skos:Concept ; skos:inScheme klc:time-period ; skos:prefLabel "present day"@en ; skos:altLabel "contemporary"@en .
+period:near-future a skos:Concept ; skos:inScheme klc:time-period ; skos:prefLabel "near future"@en .
+period:far-future a skos:Concept ; skos:inScheme klc:time-period ; skos:prefLabel "far future"@en ; skos:altLabel "distant future"@en .

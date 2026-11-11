@@ -1,0 +1,27 @@
+{
+  "id": 900003,
+  "title": "Fixture Film Without Overview",
+  "original_title": "Fixture Film Without Overview",
+  "overview": "",
+  "release_date": "1999-01-01",
+  "runtime": 90,
+  "budget": 0,
+  "revenue": 0,
+  "vote_average": 5.0,
+  "vote_count": 10,
+  "original_language": "en",
+  "imdb_id": "tt9000003",
+  "belongs_to_collection": null,
+  "genres": [],
+  "production_companies": [],
+  "production_countries": [],
+  "spoken_languages": [],
+  "keywords": {
+    "keywords": []
+  },
+  "external_ids": {},
+  "credits": {
+    "cast": [],
+    "crew": []
+  }
+}
