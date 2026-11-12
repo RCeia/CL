@@ -1,4 +1,4 @@
-from klkg.collection.wikidata_alignment import align_films, cached, pick_unique, resolve_keys
+from klkg.collection.wikidata_alignment import align_films, cached, narrative_locations, pick_unique, resolve_keys
 
 
 class FakeWikidata:
@@ -35,6 +35,23 @@ def test_batches_and_deterministic_choice():
     chosen, ambiguous = pick_unique(matches)
     assert chosen == {"7": "Q12"}
     assert ambiguous == {"7": ["Q12", "Q900"]}
+
+
+def test_narrative_locations_skip_unknown_values():
+    entity = "http://www.wikidata.org/entity/"
+    genid = "http://www.wikidata.org/.well-known/genid/7f0befeb0dcc572fad1cad56bc1115a2"
+    client = FakeWikidata([
+        {"item": entity + "Q25188", "location": entity + "Q60", "locationLabel": "New York City", "country": entity + "Q30"},
+        {"item": entity + "Q25188", "location": entity + "Q90", "locationLabel": "Paris", "country": genid},
+        {"item": entity + "Q25188", "location": genid, "locationLabel": "t123"},
+    ])
+    locations = narrative_locations(client, {"27205": "Q25188"}, batch_size=200)
+    assert locations == {
+        "27205": [
+            {"qid": "Q60", "label": "New York City", "countries": ["Q30"]},
+            {"qid": "Q90", "label": "Paris", "countries": []},
+        ]
+    }
 
 
 def test_cache_is_tied_to_the_snapshot(tmp_path):

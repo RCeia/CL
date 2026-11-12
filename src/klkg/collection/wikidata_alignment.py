@@ -171,11 +171,15 @@ def narrative_locations(client: WikidataClient, film_qids: dict[str, str], batch
     for batch in batched(sorted(set(film_qids.values()), key=qid_number), batch_size):
         for row in client.select(NARRATIVE_LOCATION_QUERY % entity_values(batch)):
             location = qid_of(row["location"])
+            # "unknown value" statements come back as .well-known/genid IRIs, not entities
+            if not QID_PATTERN.match(location):
+                continue
             entry = by_qid[qid_of(row["item"])].setdefault(
                 location, {"qid": location, "label": row.get("locationLabel", location), "countries": []}
             )
-            if "country" in row and qid_of(row["country"]) not in entry["countries"]:
-                entry["countries"].append(qid_of(row["country"]))
+            country = qid_of(row["country"]) if "country" in row else None
+            if country and QID_PATTERN.match(country) and country not in entry["countries"]:
+                entry["countries"].append(country)
     result = {}
     for tmdb_id, qid in film_qids.items():
         if qid in by_qid:
