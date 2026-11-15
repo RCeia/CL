@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 
-from klkg.collection.prepare_mapping_input import prepare
-from klkg.config import Settings, load_settings
+from p3_prepare_mapping.prepare_mapping_input import prepare
+from p0_commons.config import Settings, load_settings
 
 REPO = Path(__file__).resolve().parents[1]
 FIXTURES = Path(__file__).parent / "fixtures"

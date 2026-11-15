@@ -5,7 +5,7 @@ from pathlib import Path
 
 import requests
 
-from klkg.config import Settings, load_settings, setup_logging
+from p0_commons.config import Settings, load_settings, setup_logging
 
 logger = logging.getLogger(__name__)
 

@@ -15,23 +15,19 @@ dependencies = [
   "rdflib==7.2.1",
   "pyshacl==0.31.0",
   "morph-kgc==2.10.0",
+  "matplotlib==3.11.2",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest==9.2.0"]
 llm = ["vllm==0.33.0"]
 
-[project.scripts]
-klkg-collect = "klkg.collection.collect_movies:main"
-klkg-align = "klkg.collection.wikidata_alignment:main"
-klkg-prepare = "klkg.collection.prepare_mapping_input:main"
-klkg-pilot = "klkg.pilot.throughput_pilot:main"
-klkg-build-base = "klkg.kg.build_base_kg:main"
-klkg-validate = "klkg.kg.validate_shacl:main"
-klkg-load = "klkg.kg.fuseki_loader:main"
-
+# Each pipeline step is a folder in src/ (p1_... to p9_..., shared code in p0_commons) and its files are run
+# directly, e.g. `python src/p6_extraction/run_extraction.py`. Installing with `pip install -e .` makes the
+# folders importable from each other; there are no generated command shortcuts.
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]

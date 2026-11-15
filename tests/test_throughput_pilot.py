@@ -1,8 +1,8 @@
 import json
 
-from klkg.config import read_json
-from klkg.extraction.llm_client import Completion, LlmClient
-from klkg.pilot import throughput_pilot
+from p0_commons.config import read_json
+from p6_extraction.llm_client import Completion, LlmClient
+from p6_extraction import throughput_pilot
 
 
 def test_pilot_writes_report_and_runs(project, monkeypatch):

@@ -1,4 +1,4 @@
-from klkg.collection.wikidata_alignment import align_films, cached, narrative_locations, pick_unique, resolve_keys
+from p2_align_wikidata.wikidata_alignment import align_films, cached, narrative_locations, pick_unique, resolve_keys
 
 
 class FakeWikidata:

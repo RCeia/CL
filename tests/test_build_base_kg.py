@@ -3,8 +3,8 @@ import rdflib
 from rdflib import Literal, URIRef
 from rdflib.namespace import OWL, RDF, XSD
 
-from klkg.kg.build_base_kg import build, check_prefixes
-from klkg.kg.validate_shacl import run_validation
+from p4_base_kg.build_base_kg import build, check_prefixes
+from p0_commons.validate_shacl import run_validation
 
 KL = rdflib.Namespace("http://example.org/kl/ontology#")
 RES = rdflib.Namespace("http://example.org/kl/resource/")

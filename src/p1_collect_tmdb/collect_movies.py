@@ -5,15 +5,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from klkg.collection.snapshot import (
+from p0_commons.snapshot import (
     CONFIGURATION_DIR,
     DISCOVER_DIR,
     load_manifest,
     manifest_path,
     movie_path,
 )
-from klkg.collection.tmdb_client import TmdbClient
-from klkg.config import load_settings, require_env, setup_logging, write_json
+from p1_collect_tmdb.tmdb_client import TmdbClient
+from p0_commons.config import load_settings, require_env, setup_logging, write_json
 
 logger = logging.getLogger(__name__)
 

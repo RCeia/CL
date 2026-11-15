@@ -1,0 +1,64 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix kl: <http://example.org/kl/ontology#> .
+@prefix klsh: <http://example.org/kl/shapes#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Validated against base.ttl + enriched.ttl, with the ontology and the SKOS vocabulary mixed in.
+
+klsh: sh:declare
+    [ sh:prefix "rdf" ; sh:namespace "http://www.w3.org/1999/02/22-rdf-syntax-ns#"^^xsd:anyURI ] ,
+    [ sh:prefix "rdfs" ; sh:namespace "http://www.w3.org/2000/01/rdf-schema#"^^xsd:anyURI ] ,
+    [ sh:prefix "skos" ; sh:namespace "http://www.w3.org/2004/02/skos/core#"^^xsd:anyURI ] ,
+    [ sh:prefix "kl" ; sh:namespace "http://example.org/kl/ontology#"^^xsd:anyURI ] .
+
+klsh:PlotFactShape a sh:NodeShape ;
+    sh:targetClass kl:PlotFact ;
+    sh:property [ sh:path rdf:subject ; sh:minCount 1 ; sh:maxCount 1 ; sh:class kl:Film ] ;
+    sh:property [ sh:path rdf:predicate ; sh:minCount 1 ; sh:maxCount 1 ; sh:nodeKind sh:IRI ] ;
+    sh:property [ sh:path rdf:object ; sh:minCount 1 ; sh:maxCount 1 ; sh:class skos:Concept ] ;
+    sh:property [ sh:path kl:confidence ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:decimal ;
+                  sh:minExclusive 0 ; sh:maxInclusive 1 ] ;
+    sh:property [ sh:path kl:support ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 1 ] ;
+    sh:property [ sh:path kl:sampleCount ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:integer ; sh:minInclusive 1 ] ;
+    sh:property [ sh:path kl:extractionModel ; sh:maxCount 1 ; sh:datatype xsd:string ] ;
+    sh:sparql [
+        a sh:SPARQLConstraint ;
+        sh:message "The predicate is not a plot relation (rdfs:subPropertyOf kl:plotRelation)." ;
+        sh:prefixes klsh: ;
+        sh:select """
+            SELECT $this ?value WHERE {
+                $this rdf:predicate ?value .
+                FILTER NOT EXISTS { ?value rdfs:subPropertyOf kl:plotRelation }
+            }"""
+    ] , [
+        a sh:SPARQLConstraint ;
+        sh:message "The value is not a concept of the relation's kl:valueScheme." ;
+        sh:prefixes klsh: ;
+        sh:select """
+            SELECT $this ?value WHERE {
+                $this rdf:predicate ?p ; rdf:object ?value .
+                ?p kl:valueScheme ?scheme .
+                FILTER NOT EXISTS { ?value skos:inScheme ?scheme }
+            }"""
+    ] , [
+        a sh:SPARQLConstraint ;
+        sh:message "The reified triple is not asserted in the graph." ;
+        sh:prefixes klsh: ;
+        sh:select """
+            SELECT $this WHERE {
+                $this rdf:subject ?s ; rdf:predicate ?p ; rdf:object ?o .
+                FILTER NOT EXISTS { ?s ?p ?o }
+            }"""
+    ] , [
+        a sh:SPARQLConstraint ;
+        sh:message "Support exceeds the sample count, or confidence is not support / sample count." ;
+        sh:prefixes klsh: ;
+        sh:select """
+            SELECT $this WHERE {
+                $this kl:support ?k ; kl:sampleCount ?n ; kl:confidence ?c .
+                FILTER (?k > ?n || ABS(?c - ?k / ?n) > 0.001)
+            }"""
+    ] .

@@ -8,10 +8,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from klkg.collection.snapshot import select_movies
-from klkg.config import load_settings, setup_logging, write_json
-from klkg.extraction.llm_client import LlmClient
-from klkg.extraction.plot_schema import (
+from p0_commons.snapshot import select_movies
+from p0_commons.config import load_settings, setup_logging, write_json
+from p6_extraction.llm_client import LlmClient
+from p0_commons.plot_schema import (
     PlotRelation,
     build_messages,
     json_schema,

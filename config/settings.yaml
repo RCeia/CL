@@ -3,12 +3,19 @@ paths:
   raw_wikidata: data/raw/wikidata
   interim: data/interim
   rdf: data/rdf
+  extraction: data/extraction
   extraction_runs: data/extraction/runs
+  annotation: data/annotation
+  benchmark: data/benchmark
   reports_pilot: reports/pilot
   reports_shacl: reports/shacl
+  reports_extraction: reports/extraction
+  reports_evaluation: reports/calibration
+  reports_benchmark: reports/benchmark
   ontology: ontology/kl_ontology.ttl
   plot_vocabulary: ontology/plot_vocabulary.ttl
   base_shapes: ontology/shapes/base_shapes.ttl
+  enriched_shapes: ontology/shapes/enriched_shapes.ttl
   yarrrml_mapping: mappings/base.yarrrml.yml
   rml_mapping: mappings/base.rml.ttl
   morph_kgc_config: mappings/morph_kgc.ini
@@ -80,6 +87,22 @@ llm:
 
 extraction:
   max_values_per_relation: 3
+  concurrency: 4
+
+enrichment:
+  # Facts below this confidence stay out of the enriched graph; 0.0 keeps every fact some sample produced,
+  # so the threshold can be swept later (H3).
+  min_confidence: 0.0
+
+evaluation:
+  precision_sample_size: 200
+  recall_sample_size: 50
+  seed: 2026
+
+benchmark:
+  questions_per_hop: 100
+  max_answers: 25
+  seed: 2026
 
 pilot:
   sample_size: 100

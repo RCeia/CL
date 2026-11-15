@@ -10,8 +10,8 @@ from typing import Any
 
 import requests
 
-from klkg.collection.snapshot import iter_candidate_details, load_manifest, selected_people
-from klkg.config import Settings, load_settings, read_json, setup_logging, write_json
+from p0_commons.snapshot import iter_candidate_details, load_manifest, selected_people
+from p0_commons.config import Settings, load_settings, read_json, setup_logging, write_json
 
 logger = logging.getLogger(__name__)
 

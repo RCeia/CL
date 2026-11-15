@@ -11,7 +11,7 @@ import yaml
 from morph_kgc.mapping.yarrrml import load_yarrrml
 from rdflib.namespace import OWL, RDF, XSD
 
-from klkg.config import Settings, load_settings, setup_logging, write_json
+from p0_commons.config import Settings, load_settings, setup_logging, write_json
 
 logger = logging.getLogger(__name__)
 

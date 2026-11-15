@@ -5,7 +5,13 @@ from typing import Any
 
 import requests
 
-from klkg.config import Settings
+from p0_commons.config import Settings
+
+
+def as_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().casefold() in {"1", "true", "yes", "on"}
 
 
 @dataclass
@@ -49,12 +55,12 @@ class LlmClient:
         llm = settings["llm"]
         return cls(
             base_url=settings.value("llm", "base_url", env="LLM_BASE_URL"),
-            model=llm["model"],
+            model=settings.value("llm", "model", env="LLM_MODEL"),
             temperature=llm["temperature"],
             top_p=llm["top_p"],
             max_tokens=llm["max_tokens"],
             samples=llm["samples_per_synopsis"],
-            supports_n=llm["supports_n"],
+            supports_n=as_bool(settings.value("llm", "supports_n", env="LLM_SUPPORTS_N")),
             seed=llm.get("seed"),
             timeout=llm["timeout_seconds"],
             api_key=os.environ.get("LLM_API_KEY"),

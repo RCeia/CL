@@ -1,4 +1,4 @@
-from klkg.config import read_json
+from p0_commons.config import read_json
 
 
 def movies_by_id(settings):
@@ -12,7 +12,7 @@ def test_selection_follows_manifest_order_and_skips_missing_overview(prepared):
 
 
 def test_final_size_takes_a_prefix_of_the_snapshot(project, tmp_path):
-    from klkg.collection.prepare_mapping_input import prepare
+    from p3_prepare_mapping.prepare_mapping_input import prepare
 
     dataset = {**project["dataset"], "final_size": 1}
     summary = prepare(project.path("raw_tmdb"), project.path("raw_wikidata"), tmp_path / "interim", dataset, True)

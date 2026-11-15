@@ -10,14 +10,16 @@ from dotenv import load_dotenv
 
 CONFIG_ENV_VAR = "KLKG_CONFIG"
 DEFAULT_CONFIG = Path("config") / "settings.yaml"
+REPO_ROOT = Path(__file__).resolve().parents[2]  # src/p0_commons/config.py -> repository root
 
 
 def find_config(start: Path | None = None) -> Path:
+    """KLKG_CONFIG if set; else config/settings.yaml in the current folder or a parent; else the repository's own."""
     explicit = os.environ.get(CONFIG_ENV_VAR)
     if explicit:
         return Path(explicit).resolve()
     current = (start or Path.cwd()).resolve()
-    for directory in (current, *current.parents):
+    for directory in (current, *current.parents, REPO_ROOT):
         candidate = directory / DEFAULT_CONFIG
         if candidate.is_file():
             return candidate

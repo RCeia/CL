@@ -1,6 +1,6 @@
 import pytest
 
-from klkg.extraction.plot_schema import build_messages, json_schema, load_prompt, load_relations, validate_output
+from p0_commons.plot_schema import build_messages, json_schema, load_prompt, load_relations, validate_output
 
 EXPECTED = {
     "antagonistType",
@@ -17,7 +17,7 @@ EXPECTED = {
 
 @pytest.fixture(scope="module")
 def relations():
-    from klkg.config import load_settings
+    from p0_commons.config import load_settings
 
     settings = load_settings()
     return settings, load_relations(settings.path("ontology"), settings.path("plot_vocabulary"), settings["iris"]["ontology"])

@@ -5,7 +5,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from klkg.collection.snapshot import (
+from p0_commons.snapshot import (
     CONFIGURATION_DIR,
     load_manifest,
     select_cast,
@@ -14,7 +14,7 @@ from klkg.collection.snapshot import (
     select_writers,
     selected_people,
 )
-from klkg.config import load_settings, read_json, setup_logging, write_json
+from p0_commons.config import load_settings, read_json, setup_logging, write_json
 
 logger = logging.getLogger(__name__)
 

@@ -2,7 +2,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
-from klkg.config import read_json
+from p0_commons.config import read_json
 
 MANIFEST = "manifest.json"
 MOVIES_DIR = "movies"

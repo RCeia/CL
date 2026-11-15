@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pipeline do KG de Filmes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: a vertical pipe runs down the page; each step is a station on it. Teal = the information that travels
+   between steps, amber = what a step does to it. One film (Inception) is followed through every station. */
+:root {
+  --bg: #F2F5F7;
+  --surface: #FFFFFF;
+  --ink: #15202B;
+  --muted: #586675;
+  --line: #D4DCE3;
+  --data: #0F766E;
+  --data-soft: #E1F3F0;
+  --xform: #A9550C;
+  --xform-soft: #FCEFDD;
+  --code: #F6F8FA;
+  --wrong: #B42318;
+  --wrong-soft: #FDECEA;
+  --font-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C1217; --surface: #131C23; --ink: #E4EBF1; --muted: #93A3B1; --line: #26343F;
+    --data: #34D1BC; --data-soft: #0F2E2B; --xform: #F0A945; --xform-soft: #33240F;
+    --code: #0F171D; --wrong: #F97066; --wrong-soft: #3A1714; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0C1217; --surface: #131C23; --ink: #E4EBF1; --muted: #93A3B1; --line: #26343F;
+  --data: #34D1BC; --data-soft: #0F2E2B; --xform: #F0A945; --xform-soft: #33240F;
+  --code: #0F171D; --wrong: #F97066; --wrong-soft: #3A1714; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+.page { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.2; }
+h1 { font-size: clamp(30px, 5vw, 44px); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 26px; font-weight: 600; }
+h3 { font-size: 15px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+p { margin: 0; max-width: 68ch; }
+code, .mono { font-family: var(--font-mono); font-size: 0.88em; }
+a { color: var(--data); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--data); outline-offset: 2px; }
+
+.hero { display: flex; flex-direction: column; gap: 14px; }
+.eyebrow { font-family: var(--font-mono); font-size: 13px; color: var(--muted); letter-spacing: 0.04em; }
+.lede { font-size: 18px; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 14px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.swatch { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+.sw-data { background: var(--data); }
+.sw-xform { background: var(--xform); }
+.sw-wrong { background: var(--wrong); }
+
+.map { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.map-scroll { overflow-x: auto; }
+.map svg { display: block; min-width: 760px; width: 100%; height: auto; }
+.map .note { font-size: 13px; color: var(--muted); }
+.node rect { fill: var(--surface); stroke: var(--line); stroke-width: 1.2; transition: stroke 0.15s; }
+.node:hover rect, .node:focus-visible rect { stroke: var(--data); stroke-width: 2; }
+.node .t { font-family: var(--font-display); font-size: 13px; font-weight: 600; fill: var(--ink); }
+.node .s { font-family: var(--font-mono); font-size: 11px; fill: var(--muted); }
+.node.pending rect { stroke: var(--xform); stroke-dasharray: 5 4; }
+.edge { stroke: var(--data); stroke-width: 1.6; fill: none; }
+.edge.dashed { stroke-dasharray: 5 4; }
+.edge-label { font-family: var(--font-mono); font-size: 11px; fill: var(--data); }
+.arrowhead { fill: var(--data); }
+
+.toolbox { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.files { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.files li { display: grid; grid-template-columns: minmax(0, 15em) minmax(0, 1fr); gap: 4px 14px; font-size: 15px; }
+.files .f { font-family: var(--font-mono); font-size: 13.5px; color: var(--ink); overflow-wrap: anywhere; }
+.files .r { color: var(--muted); }
+.files .r b { color: var(--ink); font-weight: 600; }
+
+.rail { display: flex; flex-direction: column; position: relative; }
+.station { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 0 18px; scroll-margin-top: 20px; }
+.badge-col { display: flex; flex-direction: column; align-items: center; }
+.badge {
+  width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; flex: none;
+  font-family: var(--font-display); font-weight: 700; font-size: 20px; color: var(--surface); background: var(--ink);
+}
+.pipe { flex: 1; width: 4px; background: var(--data); opacity: 0.35; border-radius: 2px; min-height: 24px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.card-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+.card-head .folder { font-family: var(--font-mono); font-size: 14px; color: var(--muted); }
+.status { font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--data-soft); color: var(--data); white-space: nowrap; }
+.status.pending { background: var(--xform-soft); color: var(--xform); }
+.what { font-size: 16.5px; }
+.run { display: flex; align-items: stretch; gap: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--code); }
+.run code { flex: 1; min-width: 0; padding: 9px 12px; overflow-x: auto; white-space: nowrap; font-size: 13.5px; }
+.run button { border: 0; border-left: 1px solid var(--line); background: transparent; color: var(--muted); font: 600 13px var(--font-body); padding: 0 14px; cursor: pointer; }
+.run button:hover { color: var(--ink); }
+
+.io { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.25fr) auto minmax(0, 1fr); gap: 12px; align-items: stretch; }
+.io-box { border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; font-size: 14.5px; }
+.io-box h3 { font-size: 12.5px; }
+.io-in, .io-out { background: var(--data-soft); }
+.io-in h3, .io-out h3 { color: var(--data); }
+.io-x { background: var(--xform-soft); }
+.io-x h3 { color: var(--xform); }
+.io-box ul, .io-box ol { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; }
+.io-box .mono { overflow-wrap: anywhere; }
+.io-arrow { display: grid; place-items: center; color: var(--data); font-size: 22px; font-family: var(--font-display); }
+.from { color: var(--muted); font-size: 12.5px; }
+
+.example { border-top: 1px dashed var(--line); padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.example h3 { color: var(--data); }
+pre {
+  margin: 0; background: var(--code); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px;
+  font-family: var(--font-mono); font-size: 12.8px; line-height: 1.55; overflow: auto; max-height: 340px; white-space: pre;
+}
+.k { color: var(--data); }
+.x { color: var(--xform); }
+.bad { color: var(--wrong); font-weight: 500; }
+.ex-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.ex-grid > div { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.cap { font-size: 13px; color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.table-wrap { overflow-x: auto; }
+th, td { text-align: left; padding: 5px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-weight: 600; color: var(--muted); font-size: 12.5px; letter-spacing: 0.04em; text-transform: uppercase; }
+td.num { text-align: right; }
+tr.wrong td { color: var(--wrong); }
+.flag { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--wrong-soft); color: var(--wrong); }
+
+.connector { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 0 18px; }
+.connector .pipe-col { display: flex; justify-content: center; }
+.connector .pipe-col span { width: 4px; background: var(--data); opacity: 0.35; border-radius: 2px; }
+.packet {
+  margin: 14px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 10px 14px;
+  border: 1.5px solid var(--data); border-radius: 10px; background: var(--data-soft); color: var(--ink); font-size: 14.5px;
+}
+.packet .arrow { color: var(--data); font-weight: 700; font-family: var(--font-display); }
+.packet .mono { color: var(--data); font-weight: 500; overflow-wrap: anywhere; }
+.packet.detour { border-style: dashed; background: transparent; }
+
+.next { display: flex; flex-direction: column; gap: 12px; }
+.next ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; max-width: 70ch; }
+footer { font-size: 13px; color: var(--muted); }
+
+@media (max-width: 860px) {
+  .io { grid-template-columns: minmax(0, 1fr); }
+  .io-arrow { transform: rotate(90deg); height: 20px; }
+}
+@media (max-width: 560px) {
+  .station, .connector { grid-template-columns: 36px minmax(0, 1fr); gap: 0 10px; }
+  .badge { width: 34px; height: 34px; font-size: 15px; }
+  .card { padding: 16px; }
+  .files li { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<header class="hero">
+  <div class="eyebrow">Knowledge and Language 2026/27 · Enriching a Movie Knowledge Graph with LLM-Extracted Plot Facts</div>
+  <h1>Pipeline do KG de Filmes</h1>
+  <p class="lede">Os 9 passos do projeto, pela ordem em que correm. Para cada um: o que recebe, o que faz à informação, o que entrega ao passo seguinte e que ficheiros fazem o trabalho. Um filme, o <em>Inception</em> (TMDB 27205), é seguido do princípio ao fim com os dados reais da corrida de 15 Nov.</p>
+  <div class="legend">
+    <span><i class="swatch sw-data"></i>informação que viaja entre passos</span>
+    <span><i class="swatch sw-xform"></i>transformação feita pelo passo</span>
+    <span><i class="swatch sw-wrong"></i>erro do modelo (para a avaliação apanhar)</span>
+  </div>
+</header>
+
+<section class="map" aria-label="Mapa do fluxo">
+  <h2>O fluxo inteiro</h2>
+  <div class="map-scroll">
+    <svg viewBox="0 0 980 352" role="img" aria-labelledby="map-title map-desc">
+      <title id="map-title">Mapa da pipeline</title>
+      <desc id="map-desc">Passos 1 a 4 levam do TMDB ao grafo base, que vai para o Fuseki. As sinopses do passo 1 vão para a extração (6), que dá o grafo enriquecido (7), também carregado no Fuseki, e a avaliação (8). As perguntas (9) saem do grafo base e são verificadas no Fuseki.</desc>
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="arrowhead"/></marker>
+      </defs>
+      <line class="edge" x1="180" y1="56" x2="212" y2="56" marker-end="url(#ah)"/>
+      <line class="edge" x1="375" y1="56" x2="407" y2="56" marker-end="url(#ah)"/>
+      <line class="edge" x1="570" y1="56" x2="602" y2="56" marker-end="url(#ah)"/>
+      <line class="edge" x1="765" y1="56" x2="797" y2="56" marker-end="url(#ah)"/>
+      <path class="edge" d="M100 88 V202 H212" marker-end="url(#ah)"/>
+      <text class="edge-label" x="108" y="146">sinopses</text>
+      <line class="edge" x1="375" y1="202" x2="407" y2="202" marker-end="url(#ah)"/>
+      <path class="edge" d="M490 234 V322 H880 V239" marker-end="url(#ah)"/>
+      <text class="edge-label" x="640" y="314">enriched.ttl</text>
+      <line class="edge" x1="685" y1="88" x2="685" y2="167" marker-end="url(#ah)"/>
+      <text class="edge-label" x="693" y="134">base.ttl</text>
+      <line class="edge dashed" x1="765" y1="202" x2="797" y2="202" marker-end="url(#ah)"/>
+      <line class="edge" x1="295" y1="234" x2="295" y2="273" marker-end="url(#ah)"/>
+      <text class="edge-label" x="303" y="258">facts.json</text>
+
+      <a href="#passo-1" class="node"><rect x="20" y="24" width="160" height="64" rx="10"/><text class="t" x="34" y="50">1 · Recolher TMDB</text><text class="s" x="34" y="72">100 JSON crus</text></a>
+      <a href="#passo-2" class="node"><rect x="215" y="24" width="160" height="64" rx="10"/><text class="t" x="229" y="50">2 · Wikidata</text><text class="s" x="229" y="72">TMDB id → QID</text></a>
+      <a href="#passo-3" class="node"><rect x="410" y="24" width="160" height="64" rx="10"/><text class="t" x="424" y="50">3 · Preparar</text><text class="s" x="424" y="72">JSON limpo</text></a>
+      <a href="#passo-4" class="node"><rect x="605" y="24" width="160" height="64" rx="10"/><text class="t" x="619" y="50">4 · Grafo base</text><text class="s" x="619" y="72">22 855 triplos</text></a>
+      <a href="#passo-5" class="node"><rect x="800" y="24" width="160" height="210" rx="10"/><text class="t" x="814" y="50">5 · Fuseki</text><text class="s" x="814" y="76">grafos nomeados:</text><text class="s" x="814" y="96">ontology   698</text><text class="s" x="814" y="114">base    22 855</text><text class="s" x="814" y="132">enriched 20 682</text><text class="s" x="814" y="160">SPARQL em</text><text class="s" x="814" y="178">localhost:3030</text></a>
+      <a href="#passo-6" class="node"><rect x="215" y="170" width="160" height="64" rx="10"/><text class="t" x="229" y="196">6 · Extração LLM</text><text class="s" x="229" y="218">2298 factos</text></a>
+      <a href="#passo-7" class="node"><rect x="410" y="170" width="160" height="64" rx="10"/><text class="t" x="424" y="196">7 · Enriquecido</text><text class="s" x="424" y="218">facto + confiança</text></a>
+      <a href="#passo-9" class="node"><rect x="605" y="170" width="160" height="64" rx="10"/><text class="t" x="619" y="196">9 · Perguntas</text><text class="s" x="619" y="218">300, verifica →</text></a>
+      <a href="#passo-8" class="node pending"><rect x="215" y="276" width="160" height="64" rx="10"/><text class="t" x="229" y="302">8 · Avaliação</text><text class="s" x="229" y="324">falta anotar</text></a>
+    </svg>
+  </div>
+  <p class="note">Clique num passo para saltar para a explicação. O passo 8 tem a borda tracejada porque espera pela vossa anotação manual.</p>
+</section>
+
+<section class="toolbox" aria-label="Ficheiros partilhados">
+  <div class="panel">
+    <h2>A caixa de ferramentas</h2>
+    <p class="cap">Pasta <code>src/p0_commons/</code>: código que vários passos usam. Não é um passo; é chamado por eles.</p>
+    <ul class="files">
+      <li><span class="f">config.py</span><span class="r">Encontra e lê <code>config/settings.yaml</code> e o <code>.env</code>; dá a cada passo os caminhos e parâmetros. Escreve JSON de forma segura (primeiro para <code>.tmp</code>, depois troca). <b>Todos os passos.</b></span></li>
+      <li><span class="f">snapshot.py</span><span class="r">Sabe onde estão os filmes descarregados e escolhe o que interessa: filmes com sinopse, os 10 primeiros atores, realizadores e argumentistas. <b>Passos 2, 3, 6 e 8.</b></span></li>
+      <li><span class="f">plot_schema.py</span><span class="r">Lê a ontologia e o vocabulário SKOS e devolve as 9 relações do enredo com os valores permitidos. Monta o prompt e o JSON schema e valida respostas. <b>Passos 6 e 8.</b></span></li>
+      <li><span class="f">validate_shacl.py</span><span class="r">Corre as regras SHACL sobre um grafo e escreve o relatório; falha se houver violações. <b>Passos 4 e 7.</b></span></li>
+    </ul>
+  </div>
+  <div class="panel">
+    <h2>Os ficheiros que não são código</h2>
+    <p class="cap">Configuração, modelo de dados e infraestrutura, fora de <code>src/</code>.</p>
+    <ul class="files">
+      <li><span class="f">config/settings.yaml</span><span class="r">Todos os parâmetros: pastas, anos, tamanho do dataset, temperatura, 5 amostras, 200 factos para anotar, 100 perguntas por nº de saltos.</span></li>
+      <li><span class="f">.env</span><span class="r">Segredos e substituições locais: chave do TMDB, onde está o LLM (Ollama). Não vai para o git.</span></li>
+      <li><span class="f">config/prompts/extraction_prompt.txt</span><span class="r">O texto que o LLM recebe no passo 6.</span></li>
+      <li><span class="f">ontology/kl_ontology.ttl</span><span class="r">A ontologia OWL: classes (Film, Person, CastCredit, PlotFact…) e propriedades, incluindo as 9 relações do enredo.</span></li>
+      <li><span class="f">ontology/plot_vocabulary.ttl</span><span class="r">Vocabulário SKOS: 9 esquemas e ~120 conceitos, os únicos valores que o LLM pode escolher.</span></li>
+      <li><span class="f">ontology/shapes/*.ttl</span><span class="r">Regras SHACL do grafo base e do enriquecido.</span></li>
+      <li><span class="f">mappings/</span><span class="r"><code>base.yarrrml.yml</code> (regras JSON → RDF), <code>base.rml.ttl</code> (as mesmas em RML, gerado) e <code>morph_kgc.ini</code>.</span></li>
+      <li><span class="f">fuseki/</span><span class="r"><code>Dockerfile</code>, <code>docker-compose.yml</code> e <code>kl_dataset_config.ttl</code>: o servidor Fuseki e o dataset <code>kl</code>.</span></li>
+      <li><span class="f">tests/</span><span class="r">42 testes que correm a pipeline num snapshot sintético de 3 filmes, com um LLM falso.</span></li>
+    </ul>
+  </div>
+</section>
+
+<div class="rail">
+
+<!-- ============ PASSO 1 ============ -->
+<section class="station" id="passo-1">
+  <div class="badge-col"><div class="badge">1</div><div class="pipe"></div></div>
+  <article class="card">
+    <div class="card-head"><h2>Recolher os filmes do TMDB</h2><span class="status">feito · 100 filmes</span></div>
+    <span class="folder">src/p1_collect_tmdb/</span>
+    <p class="what">Pede ao The Movie Database os filmes mais votados e guarda, para cada um, a resposta crua da API. Nada é limpo nem alterado aqui: é uma fotografia congelada dos dados ("snapshot"), para que tudo o resto seja reprodutível.</p>
+    <div class="run"><code>.venv/Scripts/python.exe src/p1_collect_tmdb/collect_movies.py --pool-size 100</code><button type="button" data-copy>Copiar</button></div>
+    <div class="io">
+      <div class="io-box io-in"><h3>Entra</h3><ul><li>API do TMDB, com a chave do <code>.env</code></li><li><code>settings.yaml</code>: anos 1980–2025, ordenar por nº de votos, 100 candidatos</li></ul></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-x"><h3>Transformação</h3><ol><li>Percorre <code>/discover/movie</code> página a página e fica com os 100 filmes com mais votos e sinopse em inglês.</li><li>Congela essa lista em <code>manifest.json</code>.</li><li>Para cada filme pede <code>/movie/{id}</code> com elenco, equipa, keywords e IDs externos, até 20 pedidos/s e em paralelo, repetindo se o servidor falhar.</li></ol></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-out"><h3>Sai</h3><ul><li class="mono">data/raw/tmdb/manifest.json</li><li class="mono">data/raw/tmdb/movies/&lt;id&gt;.json <span class="from">100 ficheiros</span></li></ul></div>
+    </div>
+    <ul class="files">
+      <li><span class="f">collect_movies.py</span><span class="r">O passo em si: pede a lista, congela-a e descarrega os detalhes. Correr outra vez só descarrega o que falta.</span></li>
+      <li><span class="f">tmdb_client.py</span><span class="r">Fala com a API: aceita chave v3 ou token v4, respeita o limite de pedidos por segundo e repete pedidos que falham (erros 429/5xx).</span></li>
+    </ul>
+    <div class="example">
+      <h3>Inception à saída · movies/27205.json (310 KB, excerto)</h3>
+<pre>{
+  <span class="k">"id"</span>: 27205,
+  <span class="k">"title"</span>: "Inception",
+  <span class="k">"release_date"</span>: "2010-07-15",
+  <span class="k">"overview"</span>: "Cobb, a skilled thief who commits corporate espionage by infiltrating
+               the subconscious of his targets is offered a chance to regain his old life
+               as payment for a task considered to be impossible: \"inception\", ...",
+  <span class="k">"credits"</span>: {
+    "cast": [ { "id": 6193, "name": "Leonardo DiCaprio", "character": "Dom Cobb", "order": 0 }, ... ],
+    "crew": [ { "id": 525, "name": "Christopher Nolan", "job": "Director" }, ... ]
+  },
+  <span class="k">"keywords"</span>: [ "mission", "dreams", "kidnapping", "spy", "heist", "memory", ... ],
+  <span class="k">"external_ids"</span>: { "imdb_id": "tt1375666", "wikidata_id": "Q25188" },
+  ... mais 25 campos (orçamento, géneros, produtoras, países, línguas, votos) ...
+}</pre>
+    </div>
+  </article>
+</section>
+
+<div class="connector"><div class="pipe-col"><span></span></div>
+  <div class="packet"><span class="arrow">↓</span><span class="mono">data/raw/tmdb/movies/*.json</span><span>IDs do TMDB de filmes e pessoas, códigos de países e línguas</span></div>
+</div>
+
+<!-- ============ PASSO 2 ============ -->
+<section class="station" id="passo-2">
+  <div class="badge-col"><div class="badge">2</div><div class="pipe"></div></div>
+  <article class="card">
+    <div class="card-head"><h2>Ligar ao Wikidata</h2><span class="status">feito · 100/100 filmes</span></div>
+    <span class="folder">src/p2_align_wikidata/</span>
+    <p class="what">Descobre, para cada filme, pessoa, país e língua, qual é o item correspondente no Wikidata (o seu "QID"). É isto que liga o nosso grafo à Linked Data: o Inception passa a ser também <code>wd:Q25188</code>.</p>
+    <div class="run"><code>.venv/Scripts/python.exe src/p2_align_wikidata/wikidata_alignment.py</code><button type="button" data-copy>Copiar</button></div>
+    <div class="io">
+      <div class="io-box io-in"><h3>Entra</h3><ul><li>Os 100 JSON do passo 1: 100 IDs de filmes, 1028 de pessoas, 11 países, 21 línguas</li><li>Endpoint SPARQL do Wikidata</li></ul></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-x"><h3>Transformação</h3><ol><li>Agrupa os IDs em lotes de 200 e pergunta ao Wikidata em SPARQL: "que item tem P4947 = 27205?" (filmes), P4985 (pessoas), P297 (países), P218 (línguas).</li><li>Se houver vários itens, escolhe o de número mais baixo e regista a ambiguidade; compara com o ID que o TMDB já tinha e regista conflitos.</li><li>Busca também o local da narrativa (P840), ignorando os "valor desconhecido".</li><li>Guarda tudo em cache, ligado à data do snapshot.</li></ol></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-out"><h3>Sai</h3><ul><li class="mono">data/raw/wikidata/films.json</li><li class="mono">persons.json, countries.json, languages.json</li><li class="mono">narrative_locations.json</li><li class="mono">alignment_report.json</li></ul></div>
+    </div>
+    <ul class="files">
+      <li><span class="f">wikidata_alignment.py</span><span class="r">Tudo neste passo: o cliente do Wikidata (com pausas e repetições para não ser bloqueado), as consultas em lote, as regras de desempate e a cache.</span></li>
+    </ul>
+    <div class="example">
+      <h3>Inception à saída</h3>
+      <div class="ex-grid">
+<div><pre><span class="k">films.json</span>     "27205" → { "qid": "Q25188", "source": "wikidata_p4947" }
+<span class="k">persons.json</span>   "6193"  → "Q38111"   <span class="cap">(Leonardo DiCaprio)</span>
+<span class="k">narrative_locations.json</span>
+  "27205" → Los Angeles (Q65), Paris (Q90), Australia (Q408)</pre></div>
+<div><pre><span class="k">alignment_report.json</span>
+  filmes   100 / 100   conflitos 0
+  pessoas  984 / 1028
+  países    11 / 11
+  línguas   20 / 21
+  filmes com local da narrativa: 94</pre></div>
+      </div>
+    </div>
+  </article>
+</section>
+
+<div class="connector"><div class="pipe-col"><span></span></div>
+  <div class="packet"><span class="arrow">↓</span><span class="mono">data/raw/tmdb/ + data/raw/wikidata/</span><span>respostas cruas do TMDB e mapas TMDB id → QID</span></div>
+</div>
+
+<!-- ============ PASSO 3 ============ -->
+<section class="station" id="passo-3">
+  <div class="badge-col"><div class="badge">3</div><div class="pipe"></div></div>
+  <article class="card">
+    <div class="card-head"><h2>Preparar o JSON para o mapeamento</h2><span class="status">feito</span></div>
+    <span class="folder">src/p3_prepare_mapping/</span>
+    <p class="what">Transforma as respostas cruas e enormes do TMDB em registos pequenos, limpos e todos com a mesma forma, que o mapeamento do passo 4 consegue ler. É a "cozinha" antes de servir.</p>
+    <div class="run"><code>.venv/Scripts/python.exe src/p3_prepare_mapping/prepare_mapping_input.py</code><button type="button" data-copy>Copiar</button></div>
+    <div class="io">
+      <div class="io-box io-in"><h3>Entra</h3><ul><li>100 JSON do TMDB (passo 1)</li><li>QIDs do Wikidata (passo 2)</li></ul></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-x"><h3>Transformação</h3><ol><li>Fica só com o necessário: 10 primeiros atores, realizadores e argumentistas.</li><li>Limpa valores: orçamento 0 passa a vazio, datas e textos vazios desaparecem.</li><li>Junta o QID a cada filme, pessoa, país e língua.</li><li>Escreve o <code>movie_id</code> dentro de cada sub-registo (elenco, géneros, keywords…), porque o mapeamento não consegue "subir" de um ator para o filme a que pertence.</li><li>Conta as keywords mais frequentes, para curar o vocabulário.</li></ol></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-out"><h3>Sai</h3><ul><li class="mono">data/interim/movies.json <span class="from">100</span></li><li class="mono">persons.json <span class="from">1028</span></li><li class="mono">countries.json, languages.json</li><li class="mono">keyword_frequencies.json <span class="from">1094</span></li><li class="mono">selection.json</li></ul></div>
+    </div>
+    <ul class="files">
+      <li><span class="f">prepare_mapping_input.py</span><span class="r">O passo inteiro: seleção, limpeza, junção dos QIDs e escrita dos ficheiros intermédios.</span></li>
+    </ul>
+    <div class="example">
+      <h3>Inception à saída · registo em movies.json (excerto)</h3>
+<pre>{ <span class="k">"tmdb_id"</span>: 27205, <span class="k">"title"</span>: "Inception", <span class="k">"release_date"</span>: "2010-07-15",
+  <span class="k">"runtime"</span>: 148, <span class="k">"budget"</span>: 160000000, <span class="k">"wikidata_id"</span>: "Q25188",
+  <span class="k">"genres"</span>:    [ { <span class="x">"movie_id": 27205</span>, "id": 28,  "name": "Action" }, ... ],
+  <span class="k">"keywords"</span>:  [ { <span class="x">"movie_id": 27205</span>, "id": 1566, "name": "dreams" }, ... ],
+  <span class="k">"cast"</span>:      [ { <span class="x">"movie_id": 27205</span>, "person_id": 6193, "character": "Dom Cobb", "order": 0 }, ... ],
+  <span class="k">"directors"</span>: [ { <span class="x">"movie_id": 27205</span>, "person_id": 525, "job": "Director" } ] }
+
+<span class="k">keyword_frequencies.json</span>  superhero 31 · based on comic 31 · sequel 28 · based on novel 28 ...</pre>
+      <p class="cap">Em laranja: o <code>movie_id</code> repetido em cada sub-registo, a transformação que torna o mapeamento possível.</p>
+    </div>
+  </article>
+</section>
+
+<div class="connector"><div class="pipe-col"><span></span></div>
+  <div class="packet"><span class="arrow">↓</span><span class="mono">data/interim/*.json</span><span>registos limpos e achatados, cada um com o seu <code>movie_id</code></span></div>
+</div>
+
+<!-- ============ PASSO 4 ============ -->
+<section class="station" id="passo-4">
+  <div class="badge-col"><div class="badge">4</div><div class="pipe"></div></div>
+  <article class="card">
+    <div class="card-head"><h2>Construir e validar o grafo base</h2><span class="status">feito · 0 violações</span></div>
+    <span class="folder">src/p4_base_kg/ + mappings/ + src/p0_commons/validate_shacl.py</span>
+    <p class="what">Aqui o JSON vira grafo. Um mapeamento declarativo diz "cada registo de filme gera um nó <code>res:film/&lt;id&gt;</code> com estas propriedades", e o morph-kgc aplica essas regras a todos os registos. Depois o SHACL confirma que o grafo tem a forma prometida.</p>
+    <div class="run"><code>.venv/Scripts/python.exe src/p4_base_kg/build_base_kg.py</code><button type="button" data-copy>Copiar</button></div>
+    <div class="run"><code>.venv/Scripts/python.exe src/p0_commons/validate_shacl.py</code><button type="button" data-copy>Copiar</button></div>
+    <div class="io">
+      <div class="io-box io-in"><h3>Entra</h3><ul><li><code>data/interim/*.json</code> (passo 3)</li><li><code>mappings/base.yarrrml.yml</code>: 181 linhas de regras</li><li><code>ontology/shapes/base_shapes.ttl</code></li></ul></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-x"><h3>Transformação</h3><ol><li>Confirma que os prefixos do mapeamento batem com o <code>settings.yaml</code>.</li><li>Traduz as regras YARRRML para RML (<code>base.rml.ttl</code>, 491 linhas).</li><li>O morph-kgc lê cada registo com JSONPath e gera triplos: sujeito, predicado, objeto.</li><li>O SHACL verifica, por exemplo, que cada filme tem exatamente um nome e um ID do TMDB.</li></ol></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-out"><h3>Sai</h3><ul><li class="mono">data/rdf/base.ttl <span class="from">22 855 triplos</span></li><li class="mono">data/rdf/base_stats.json</li><li class="mono">reports/shacl/base_*</li></ul></div>
+    </div>
+    <ul class="files">
+      <li><span class="f">build_base_kg.py</span><span class="r">Verifica os prefixos, gera o RML a partir do YARRRML, chama o morph-kgc e escreve o Turtle e as estatísticas.</span></li>
+      <li><span class="f">p0_commons/validate_shacl.py</span><span class="r">Corre o SHACL; o mesmo ficheiro valida o grafo enriquecido no passo 7.</span></li>
+    </ul>
+    <div class="example">
+      <h3>Inception à saída · 63 triplos sobre o filme (excerto, IRIs abreviados)</h3>
+      <div class="ex-grid">
+<div><span class="cap">Regra (YARRRML)</span><pre><span class="k">film:</span>
+  sources: [movies.json~jsonpath, "$[*]"]
+  s: res:film/$(tmdb_id)
+  po:
+    - [a, kl:Film]
+    - [schema:name, $(title)]
+    - [schema:datePublished, $(release_date), xsd:date]
+    - [owl:sameAs, wd:$(wikidata_id)~iri]</pre></div>
+<div><span class="cap">Resultado (Turtle)</span><pre>res:film/27205  a kl:Film ;
+  schema:name "Inception" ;
+  schema:datePublished "2010-07-15"^^xsd:date ;
+  schema:director res:person/525 ;
+  schema:actor res:person/6193 , ... ;
+  kl:hasCastCredit res:credit/52fe…de03 ;
+  owl:sameAs wd:Q25188 .
+
+res:credit/52fe…de03  a kl:CastCredit ;
+  kl:creditedPerson res:person/6193 ;
+  kl:characterName "Dom Cobb" ; kl:castOrder 0 .
+
+res:person/6193  a kl:Person ;
+  schema:name "Leonardo DiCaprio" ; owl:sameAs wd:Q38111 .</pre></div>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>Classe</th><th class="num">Nós</th><th>Classe</th><th class="num">Nós</th></tr></thead><tbody>
+        <tr><td>Film</td><td class="num">100</td><td>Keyword</td><td class="num">1094</td></tr>
+        <tr><td>Person</td><td class="num">1028</td><td>ProductionCompany</td><td class="num">139</td></tr>
+        <tr><td>CastCredit</td><td class="num">1000</td><td>FilmCollection</td><td class="num">47</td></tr>
+        <tr><td>CrewCredit</td><td class="num">612</td><td>Genre · Country · Language</td><td class="num">17 · 11 · 21</td></tr>
+      </tbody></table></div>
+    </div>
+  </article>
+</section>
+
+<div class="connector"><div class="pipe-col"><span></span></div>
+  <div class="packet"><span class="arrow">↓</span><span class="mono">data/rdf/base.ttl</span><span>22 855 triplos RDF, mais a ontologia e o vocabulário</span></div>
+</div>
+
+<!-- ============ PASSO 5 ============ -->
+<section class="station" id="passo-5">
+  <div class="badge-col"><div class="badge">5</div><div class="pipe"></div></div>
+  <article class="card">
+    <div class="card-head"><h2>Carregar no Fuseki</h2><span class="status">feito · 3 grafos</span></div>
+    <span class="folder">src/p5_fuseki/ + fuseki/</span>
+    <p class="what">Um ficheiro Turtle não responde a perguntas. O Fuseki é uma base de dados de grafos: guarda os triplos em disco e responde a consultas SPARQL em <code>http://localhost:3030</code>. Cada ficheiro vai para um grafo nomeado, o que permite comparar "com" e "sem" enriquecimento no mesmo servidor.</p>
+    <div class="run"><code>docker compose -f fuseki/docker-compose.yml up -d --build</code><button type="button" data-copy>Copiar</button></div>
+    <div class="run"><code>.venv/Scripts/python.exe src/p5_fuseki/fuseki_loader.py</code><button type="button" data-copy>Copiar</button></div>
+    <div class="io">
+      <div class="io-box io-in"><h3>Entra</h3><ul><li><code>base.ttl</code> (passo 4)</li><li><code>kl_ontology.ttl</code> + <code>plot_vocabulary.ttl</code></li><li>mais tarde: <code>enriched.ttl</code> (passo 7)</li></ul></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-x"><h3>Transformação</h3><ol><li>Confirma que o servidor responde (<code>/$/ping</code>).</li><li>Envia cada ficheiro por HTTP (Graph Store Protocol): PUT substitui o grafo, POST acrescenta.</li><li>Conta os triplos de cada grafo para confirmar o carregamento.</li><li>O Fuseki guarda-os em TDB2, num volume do Docker que sobrevive a reinícios.</li></ol></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-out"><h3>Sai</h3><ul><li class="mono">graph/ontology <span class="from">698</span></li><li class="mono">graph/base <span class="from">22 855</span></li><li class="mono">graph/enriched <span class="from">20 682</span></li><li>Endpoint <code>/kl/sparql</code></li></ul></div>
+    </div>
+    <ul class="files">
+      <li><span class="f">fuseki_loader.py</span><span class="r">Envia os ficheiros para os grafos nomeados (<code>ontology</code>, <code>base</code> ou <code>enriched</code>) e conta os triplos.</span></li>
+      <li><span class="f">fuseki/Dockerfile</span><span class="r">Descarrega o Fuseki 6.2.0 e confirma o checksum SHA-512 do ficheiro.</span></li>
+      <li><span class="f">fuseki/docker-compose.yml</span><span class="r">Arranca o contentor <code>klkg-fuseki</code>, só acessível a partir deste PC, com o volume de dados.</span></li>
+      <li><span class="f">fuseki/kl_dataset_config.ttl</span><span class="r">Define o dataset <code>kl</code>: os endpoints e a união dos grafos como grafo por omissão.</span></li>
+    </ul>
+    <div class="example">
+      <h3>Exemplo de pergunta ao Fuseki</h3>
+      <div class="ex-grid">
+<div><pre>PREFIX schema: &lt;http://schema.org/&gt;
+SELECT ?titulo WHERE {
+  ?nolan schema:name "Christopher Nolan" .
+  ?f schema:director ?nolan ;
+     schema:name ?titulo .
+}</pre></div>
+<div><pre><span class="k">?titulo</span>
+Batman Begins
+Inception
+Interstellar
+The Dark Knight
+The Dark Knight Rises</pre></div>
+      </div>
+    </div>
+  </article>
+</section>
+
+<div class="connector"><div class="pipe-col"><span></span></div>
+  <div class="packet detour"><span class="arrow">↺</span><span>O passo 6 não lê do Fuseki: volta às sinopses do passo 1</span><span class="mono">data/raw/tmdb/movies/*.json → "overview"</span></div>
+</div>
+
+<!-- ============ PASSO 6 ============ -->
+<section class="station" id="passo-6">
+  <div class="badge-col"><div class="badge">6</div><div class="pipe"></div></div>
+  <article class="card">
+    <div class="card-head"><h2>Extrair os factos do enredo com o LLM</h2><span class="status">feito · 500 respostas</span></div>
+    <span class="folder">src/p6_extraction/ + config/prompts/ + src/p0_commons/plot_schema.py</span>
+    <p class="what">A parte de "linguagem" do projeto. O LLM lê a sinopse e preenche uma ficha de escolha múltipla com 9 campos (profissão do protagonista, objetivo, local, época…). Fá-lo 5 vezes; a confiança de cada facto é a fração das 5 respostas que o contêm.</p>
+    <div class="run"><code>.venv/Scripts/python.exe src/p6_extraction/run_extraction.py --concurrency 2</code><button type="button" data-copy>Copiar</button></div>
+    <div class="io">
+      <div class="io-box io-in"><h3>Entra</h3><ul><li>Título, ano e sinopse de cada filme (passo 1)</li><li>9 relações e ~120 valores do vocabulário SKOS</li><li><code>extraction_prompt.txt</code></li><li>O LLM: <code>qwen2.5:3b</code> no Ollama</li></ul></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-x"><h3>Transformação</h3><ol><li>Monta o prompt: instruções, as 9 relações com a lista de valores, título, ano e sinopse (~600 tokens).</li><li>Um JSON schema obriga a resposta a ser JSON só com valores da lista, no máximo 3 por relação.</li><li>Pede 5 respostas com temperatura 0.7 e sementes diferentes.</li><li>Guarda as respostas cruas logo que chegam (retoma se for interrompido).</li><li>Conta em quantas respostas aparece cada par (relação, valor): <b>confiança = n / 5</b>.</li></ol></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-out"><h3>Sai</h3><ul><li class="mono">data/extraction/runs/samples_*.jsonl <span class="from">500 respostas</span></li><li class="mono">data/extraction/facts.json <span class="from">2298 factos</span></li><li class="mono">reports/extraction/extraction_report.json</li></ul></div>
+    </div>
+    <ul class="files">
+      <li><span class="f">run_extraction.py</span><span class="r">O passo: escolhe os filmes, envia os pedidos em paralelo, guarda as respostas, agrega as 5 em factos com confiança e escreve o relatório (100% JSON válido, 17.7 s por filme).</span></li>
+      <li><span class="f">llm_client.py</span><span class="r">Fala com qualquer servidor compatível com a API da OpenAI: vLLM (pede as 5 de uma vez) ou Ollama (5 pedidos). O <code>.env</code> diz qual.</span></li>
+      <li><span class="f">throughput_pilot.py</span><span class="r">O piloto: mede a velocidade em 100 sinopses e projeta as horas para 2000, 2500 e 3000 filmes, para escolher o N final.</span></li>
+      <li><span class="f">p0_commons/plot_schema.py</span><span class="r">Transforma o vocabulário SKOS na lista de valores do prompt e no JSON schema; resolve sinónimos ("reporter" → journalist).</span></li>
+    </ul>
+    <div class="example">
+      <h3>Inception, do texto aos factos</h3>
+      <div class="ex-grid">
+<div><span class="cap">O que o LLM lê</span><pre>Film: Inception (2010)
+Synopsis: Cobb, a skilled thief who commits
+corporate espionage by infiltrating the
+subconscious of his targets is offered a chance
+to regain his old life as payment for a task
+considered to be impossible: "inception", the
+implantation of another person's idea into a
+target's subconscious.</pre></div>
+<div><span class="cap">2 das 5 respostas (só campos preenchidos)</span><pre>{ "protagonistOccupation": ["spy"],
+  "plotEvent": ["invasion", "heist", "time travel"],
+  "protagonistGoal": ["uncover the truth",
+                      "protect someone", "save the world"],
+  "timePeriod": ["present day"], ... }
+
+{ "protagonistOccupation": ["detective", "spy"],
+  "plotEvent": ["invasion", "time travel"],
+  "protagonistGoal": ["uncover the truth",
+                      "revenge", "success"], ... }</pre></div>
+      </div>
+      <span class="cap">Depois de juntar as 5 respostas: 25 factos para o Inception (excerto)</span>
+      <div class="table-wrap"><table><thead><tr><th>Relação</th><th>Valor</th><th class="num">Respostas</th><th class="num">Confiança</th><th></th></tr></thead><tbody>
+        <tr><td>protagonistOccupation</td><td>spy</td><td class="num">5 / 5</td><td class="num">1.0</td><td></td></tr>
+        <tr><td>protagonistOccupation</td><td>detective</td><td class="num">2 / 5</td><td class="num">0.4</td><td></td></tr>
+        <tr><td>protagonistOccupation</td><td>assassin</td><td class="num">1 / 5</td><td class="num">0.2</td><td></td></tr>
+        <tr><td>plotEvent</td><td>heist</td><td class="num">4 / 5</td><td class="num">0.8</td><td></td></tr>
+        <tr class="wrong"><td>plotEvent</td><td>invasion</td><td class="num">5 / 5</td><td class="num">1.0</td><td><span class="flag">a sinopse não diz</span></td></tr>
+        <tr class="wrong"><td>plotEvent</td><td>time travel</td><td class="num">5 / 5</td><td class="num">1.0</td><td><span class="flag">a sinopse não diz</span></td></tr>
+        <tr><td>protagonistGoal</td><td>uncover the truth</td><td class="num">5 / 5</td><td class="num">1.0</td><td></td></tr>
+        <tr class="wrong"><td>antagonistType</td><td>supervillain</td><td class="num">4 / 5</td><td class="num">0.8</td><td><span class="flag">a sinopse não diz</span></td></tr>
+        <tr><td>timePeriod</td><td>present day</td><td class="num">5 / 5</td><td class="num">1.0</td><td></td></tr>
+      </tbody></table></div>
+      <p class="cap">"Skilled thief" não tem valor no vocabulário (não existe "thief"), por isso o modelo escolhe "spy". E o modelo de 3B inventa factos com confiança alta: é exatamente isto que a avaliação do passo 8 vai medir.</p>
+      <div class="table-wrap"><table><thead><tr><th>Confiança</th><th class="num">0.2</th><th class="num">0.4</th><th class="num">0.6</th><th class="num">0.8</th><th class="num">1.0</th><th class="num">Total</th></tr></thead><tbody>
+        <tr><td>Factos (100 filmes)</td><td class="num">800</td><td class="num">375</td><td class="num">299</td><td class="num">317</td><td class="num">507</td><td class="num">2298</td></tr>
+      </tbody></table></div>
+    </div>
+  </article>
+</section>
+
+<div class="connector"><div class="pipe-col"><span></span></div>
+  <div class="packet"><span class="arrow">↓</span><span class="mono">data/extraction/facts.json</span><span>2298 factos (filme, relação, valor, nº de respostas, confiança)</span></div>
+</div>
+
+<!-- ============ PASSO 7 ============ -->
+<section class="station" id="passo-7">
+  <div class="badge-col"><div class="badge">7</div><div class="pipe"></div></div>
+  <article class="card">
+    <div class="card-head"><h2>Construir, validar e carregar o grafo enriquecido</h2><span class="status">feito · 0 violações</span></div>
+    <span class="folder">src/p7_enriched_kg/ + ontology/shapes/enriched_shapes.ttl</span>
+    <p class="what">Os factos voltam a ser RDF. Um triplo só tem sujeito, predicado e objeto, e não há lugar para a confiança. Por isso cada facto entra duas vezes: como triplo direto, para as consultas serem curtas, e como nó <code>kl:PlotFact</code> que descreve esse triplo e guarda a confiança (reificação).</p>
+    <div class="run"><code>.venv/Scripts/python.exe src/p7_enriched_kg/build_enriched_kg.py</code><button type="button" data-copy>Copiar</button></div>
+    <div class="run"><code>.venv/Scripts/python.exe src/p0_commons/validate_shacl.py --enriched</code><button type="button" data-copy>Copiar</button></div>
+    <div class="run"><code>.venv/Scripts/python.exe src/p5_fuseki/fuseki_loader.py enriched</code><button type="button" data-copy>Copiar</button></div>
+    <div class="io">
+      <div class="io-box io-in"><h3>Entra</h3><ul><li><code>facts.json</code> (passo 6)</li><li><code>enrichment.min_confidence</code> = 0 (fica tudo)</li></ul></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-x"><h3>Transformação</h3><ol><li>Cada facto dá 1 triplo direto + 8 triplos do nó PlotFact: 9 por facto.</li><li>O SHACL-SPARQL verifica: o predicado é uma relação do enredo; o valor pertence ao esquema SKOS dessa relação; o triplo direto existe; confiança = respostas / 5.</li><li>O grafo é carregado no Fuseki, no grafo <code>enriched</code>.</li></ol></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-out"><h3>Sai</h3><ul><li class="mono">data/rdf/enriched.ttl <span class="from">20 682 = 2298 × 9</span></li><li class="mono">reports/shacl/enriched_*</li><li>grafo <code>enriched</code> no Fuseki</li></ul></div>
+    </div>
+    <ul class="files">
+      <li><span class="f">build_enriched_kg.py</span><span class="r">Escreve os triplos diretos e os nós PlotFact, aplica o limiar de confiança e calcula as estatísticas.</span></li>
+      <li><span class="f">enriched_shapes.ttl</span><span class="r">As 4 regras SHACL-SPARQL acima, mais tipos e intervalos (confiança entre 0 e 1).</span></li>
+    </ul>
+    <div class="example">
+      <h3>Inception à saída (IRIs abreviados)</h3>
+<pre><span class="cap"># 1. o triplo direto</span>
+res:film/27205  kl:protagonistOccupation  klc:occupation/spy .
+
+<span class="cap"># 2. o nó que descreve esse triplo e guarda a confiança</span>
+res:fact/27205/protagonistOccupation/spy  a kl:PlotFact ;
+    rdf:subject   res:film/27205 ;
+    rdf:predicate kl:protagonistOccupation ;
+    rdf:object    klc:occupation/spy ;
+    <span class="x">kl:confidence 1.0 ; kl:support 5 ; kl:sampleCount 5 ;</span>
+    kl:extractionModel "qwen2.5:3b" .</pre>
+      <p class="cap">Agora uma consulta pode filtrar por confiança, por exemplo <code>FILTER(?c &gt;= 0.6)</code>: atores que trabalharam com o Nolan num filme cujo protagonista é detetive devolve 22 pares ator–filme.</p>
+    </div>
+  </article>
+</section>
+
+<div class="connector"><div class="pipe-col"><span></span></div>
+  <div class="packet detour"><span class="arrow">↺</span><span>A avaliação usa os factos do passo 6 e as sinopses do passo 1; não precisa do grafo</span><span class="mono">facts.json + movies/*.json</span></div>
+</div>
+
+<!-- ============ PASSO 8 ============ -->
+<section class="station" id="passo-8">
+  <div class="badge-col"><div class="badge">8</div><div class="pipe"></div></div>
+  <article class="card">
+    <div class="card-head"><h2>Avaliar a extração</h2><span class="status pending">falta a anotação manual</span></div>
+    <span class="folder">src/p8_evaluation/</span>
+    <p class="what">Quanto do que o LLM disse está certo, e a confiança é de confiar? Um programa sorteia factos, vocês os dois marcam-nos à mão (certo ou errado) sem ver a confiança, e outro programa compara as marcações com a confiança.</p>
+    <div class="run"><code>.venv/Scripts/python.exe src/p8_evaluation/annotation.py</code><button type="button" data-copy>Copiar</button></div>
+    <div class="run"><code>.venv/Scripts/python.exe src/p8_evaluation/extraction_metrics.py</code><button type="button" data-copy>Copiar</button></div>
+    <div class="io">
+      <div class="io-box io-in"><h3>Entra</h3><ul><li><code>facts.json</code> (passo 6)</li><li>Sinopses (passo 1)</li><li>Vocabulário SKOS</li><li><b>As vossas anotações</b></li></ul></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-x"><h3>Transformação</h3><ol><li>Sorteia 200 factos, 40 de cada nível de confiança, e esconde a confiança numa chave à parte.</li><li>Sorteia 50 filmes para anotar de raiz (recall e κ).</li><li>Depois da anotação: precisão por nível com intervalo de Wilson; precisão global pesada pelo nº real de factos de cada nível (800, 375, 299, 317, 507).</li><li>ECE (distância média entre confiança e precisão), precisão vs limiar, recall e κ de Cohen; desenha o diagrama de fiabilidade.</li></ol></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-out"><h3>Sai</h3><ul><li class="mono">data/annotation/precision_sheet.csv <span class="from">200</span></li><li class="mono">precision_key.json</li><li class="mono">recall_sheet.csv <span class="from">50 × 9</span></li><li class="mono">reports/calibration/extraction_eval.json</li><li class="mono">reports/calibration/reliability_diagram.png</li></ul></div>
+    </div>
+    <ul class="files">
+      <li><span class="f">annotation.py</span><span class="r">Faz o sorteio estratificado e escreve as folhas CSV (separadas por <code>;</code> para o Excel). Recusa apagar folhas que já existem.</span></li>
+      <li><span class="f">extraction_metrics.py</span><span class="r">Lê as folhas preenchidas (aceita 1/0, sim/não), resolve desacordos com a coluna <code>final</code>, calcula as métricas e desenha o diagrama.</span></li>
+    </ul>
+    <div class="example">
+      <h3>Uma linha da folha de precisão</h3>
+<pre>item;movie_id;title;year;overview;relation;statement;<span class="x">annotator_1;annotator_2;final</span>;notes
+P001;102899;Ant-Man;2015;"Armed with the astonishing ability to shrink…";protagonistGoal;
+     protagonist goal: save the world;<span class="x">1 ou 0;1 ou 0;só se discordarem</span>;</pre>
+      <p class="cap">A confiança deste facto não aparece na folha; está em <code>precision_key.json</code>, para não influenciar quem anota.</p>
+    </div>
+  </article>
+</section>
+
+<div class="connector"><div class="pipe-col"><span></span></div>
+  <div class="packet detour"><span class="arrow">↺</span><span>O passo 9 volta ao grafo base do passo 4 e verifica no Fuseki do passo 5</span><span class="mono">base.ttl + /kl/sparql</span></div>
+</div>
+
+<!-- ============ PASSO 9 ============ -->
+<section class="station" id="passo-9">
+  <div class="badge-col"><div class="badge">9</div><div class="pipe" style="opacity:0"></div></div>
+  <article class="card">
+    <div class="card-head"><h2>Gerar as perguntas de template</h2><span class="status">feito · 0 diferenças</span></div>
+    <span class="folder">src/p9_questions/</span>
+    <p class="what">O exame para os sistemas de 3 Dez. Cada modelo de pergunta é uma frase com um buraco mais uma consulta SPARQL com o mesmo buraco. Preenche-se o buraco com um filme ou uma pessoa, e a resposta certa é o que a consulta devolve.</p>
+    <div class="run"><code>.venv/Scripts/python.exe src/p9_questions/template_questions.py --verify-fuseki</code><button type="button" data-copy>Copiar</button></div>
+    <div class="io">
+      <div class="io-box io-in"><h3>Entra</h3><ul><li><code>base.ttl</code> (passo 4)</li><li>Fuseki (passo 5), para verificar</li><li>16 modelos de pergunta</li></ul></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-x"><h3>Transformação</h3><ol><li>Escolhe filmes e pessoas cujo nome não se repete no grafo (para a pergunta não ser ambígua).</li><li>Preenche o modelo, corre o SPARQL e guarda a pergunta se tiver entre 1 e 25 respostas.</li><li>Alterna entre modelos até ter 100 perguntas de 1, de 2 e de 3 saltos.</li><li>Com <code>--verify-fuseki</code>, volta a correr cada consulta no Fuseki e compara.</li></ol></div>
+      <div class="io-arrow" aria-hidden="true">→</div>
+      <div class="io-box io-out"><h3>Sai</h3><ul><li class="mono">data/benchmark/template_questions.json <span class="from">300</span></li><li class="mono">reports/benchmark/template_questions_summary.json</li></ul></div>
+    </div>
+    <ul class="files">
+      <li><span class="f">template_questions.py</span><span class="r">Os 16 modelos (6 de 1 salto, 6 de 2, 4 de 3), a geração, a verificação no Fuseki e o resumo (5.7 respostas por pergunta em média).</span></li>
+    </ul>
+    <div class="example">
+      <h3>Perguntas que partem do Inception</h3>
+      <div class="table-wrap"><table><thead><tr><th>Saltos</th><th>Pergunta</th><th>Caminho no grafo</th><th>Respostas certas</th></tr></thead><tbody>
+        <tr><td class="num">1</td><td>Who wrote Inception?</td><td>filme → argumentista</td><td>Christopher Nolan</td></tr>
+        <tr><td class="num">2</td><td>Which other films were directed by the director of Inception?</td><td>filme → realizador → filmes</td><td>The Dark Knight, Interstellar, Batman Begins, The Dark Knight Rises</td></tr>
+        <tr><td class="num">3</td><td>Who directed the other films that the cast of Inception starred in?</td><td>filme → atores → filmes → realizadores</td><td>Martin Scorsese, Quentin Tarantino, George Miller, Alejandro G. Iñárritu, James Cameron, Christopher Nolan</td></tr>
+      </tbody></table></div>
+<pre><span class="cap"># a consulta guardada com a pergunta de 2 saltos</span>
+SELECT DISTINCT ?answer WHERE {
+  &lt;…/film/27205&gt; schema:director ?director .
+  ?answer schema:director ?director .
+  FILTER (?answer != &lt;…/film/27205&gt;)
+}</pre>
+      <p class="cap">Estas perguntas só usam metadados: são o grupo de controlo. O grafo base e o enriquecido devem acertar o mesmo nelas.</p>
+    </div>
+  </article>
+</section>
+
+</div>
+
+<section class="panel next">
+  <h2>Depois da pipeline (checkpoint de 3 Dez)</h2>
+  <p>Até aqui construímos os dados e o exame. A seguir vêm os sistemas que respondem às perguntas, nos dois grafos:</p>
+  <ol>
+    <li>150 perguntas mistas (metadados + enredo), com respostas certas anotadas à mão.</li>
+    <li>B0 só o LLM, B1 pesquisa de texto (BM25 + embeddings), B2 o LLM escreve SPARQL.</li>
+    <li>S1 o LLM planeia o caminho e o SPARQL executa; S2 um agente estilo Plan-on-Graph; S3 GCR.</li>
+    <li>Hits@1, F1, faithfulness, taxa de alucinação, custo; a confiança do passo 6 decide quando responder "não sei" (H3).</li>
+  </ol>
+</section>
+
+<footer>Dados da corrida de 15 Nov 2026: snapshot de 100 filmes do TMDB, extração com qwen2.5:3b no Ollama (substituto de desenvolvimento do Qwen2.5-7B da proposta).</footer>
+
+</div>
+
+<script>
+document.querySelectorAll("[data-copy]").forEach(function (button) {
+  button.addEventListener("click", function () {
+    var code = button.parentElement.querySelector("code");
+    var text = code.textContent;
+    var done = function () { button.textContent = "Copiado"; setTimeout(function () { button.textContent = "Copiar"; }, 1500); };
+    var select = function () {
+      var range = document.createRange(); range.selectNodeContents(code);
+      var selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range);
+      button.textContent = "Selecionado";
+      setTimeout(function () { button.textContent = "Copiar"; }, 1500);
+    };
+    try {
+      navigator.clipboard.writeText(text).then(done, select);
+    } catch (error) { select(); }
+  });
+});
+</script>
+</body>
+</html>

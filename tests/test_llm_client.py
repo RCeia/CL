@@ -1,4 +1,4 @@
-from klkg.extraction.llm_client import LlmClient
+from p6_extraction.llm_client import LlmClient
 
 
 class FakeResponse:

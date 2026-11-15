@@ -1,7 +1,7 @@
 import pytest
 
-from klkg.collection import tmdb_client
-from klkg.collection.tmdb_client import TmdbClient, is_v4_token
+from p1_collect_tmdb import tmdb_client
+from p1_collect_tmdb.tmdb_client import TmdbClient, is_v4_token
 
 V4 = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJ4In0.c2lnbmF0dXJl"
 V3 = "0123456789abcdef0123456789abcdef"

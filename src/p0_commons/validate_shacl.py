@@ -8,7 +8,7 @@ import rdflib
 from pyshacl import validate
 from rdflib.namespace import SH
 
-from klkg.config import load_settings, setup_logging, write_json
+from p0_commons.config import load_settings, setup_logging, write_json
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +21,11 @@ def load_graph(paths: list[Path]) -> rdflib.Graph:
 
 
 def run_validation(data: list[Path], shapes: Path, ontology: list[Path]) -> tuple[bool, rdflib.Graph, dict[str, object]]:
+    # The ontology and the SKOS vocabulary are merged into the data graph so that sh:class checks on concepts and
+    # the SHACL-SPARQL constraints can see them (pyshacl only mixes ont_graph in when inference is on).
     conforms, report, _ = validate(
-        data_graph=load_graph(data),
+        data_graph=load_graph(data + ontology),
         shacl_graph=load_graph([shapes]),
-        ont_graph=load_graph(ontology),
         inference="none",
         allow_warnings=True,
         advanced=True,
@@ -48,17 +49,27 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Validate a KG serialisation against SHACL shapes.")
     parser.add_argument("--data", type=Path, nargs="+", default=None, help="defaults to <paths.rdf>/base.ttl")
     parser.add_argument("--shapes", type=Path, default=None, help="defaults to paths.base_shapes")
-    parser.add_argument("--name", default="base", help="name used for the report files")
+    parser.add_argument("--name", default=None, help="name used for the report files (default: base or enriched)")
+    parser.add_argument(
+        "--enriched", action="store_true", help="validate base.ttl + enriched.ttl against paths.enriched_shapes"
+    )
     args = parser.parse_args()
     setup_logging()
     settings = load_settings()
-    data = args.data or [settings.path("rdf") / "base.ttl"]
-    shapes = args.shapes or settings.path("base_shapes")
+    rdf = settings.path("rdf")
+    if args.enriched:
+        data = args.data or [rdf / "base.ttl", rdf / "enriched.ttl"]
+        shapes = args.shapes or settings.path("enriched_shapes")
+        name = args.name or "enriched"
+    else:
+        data = args.data or [rdf / "base.ttl"]
+        shapes = args.shapes or settings.path("base_shapes")
+        name = args.name or "base"
     valid, report, summary = run_validation(data, shapes, [settings.path("ontology"), settings.path("plot_vocabulary")])
     out = settings.path("reports_shacl")
     out.mkdir(parents=True, exist_ok=True)
-    report.serialize(out / f"{args.name}_report.ttl", format="turtle")
-    write_json(out / f"{args.name}_summary.json", summary)
+    report.serialize(out / f"{name}_report.ttl", format="turtle")
+    write_json(out / f"{name}_summary.json", summary)
     logger.info("SHACL %s: %s", "passed" if valid else "failed", summary["by_severity"])
     sys.exit(0 if valid else 1)
 

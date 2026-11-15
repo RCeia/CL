@@ -83,3 +83,13 @@ kl:settingEnvironment a owl:ObjectProperty ; rdfs:subPropertyOf kl:plotRelation 
     rdfs:label "setting environment"@en ; kl:valueScheme klc:environment .
 kl:timePeriod a owl:ObjectProperty ; rdfs:subPropertyOf kl:plotRelation ;
     rdfs:label "time period"@en ; kl:valueScheme klc:time-period .
+
+kl:PlotFact a owl:Class ; rdfs:subClassOf rdf:Statement ; rdfs:label "Plot fact"@en ;
+    rdfs:comment "A plot triple extracted by the LLM from a film overview, reified with rdf:subject, rdf:predicate and rdf:object so it can carry a confidence. The triple itself is also asserted directly in the enriched graph."@en .
+kl:confidence a owl:DatatypeProperty ; rdfs:domain kl:PlotFact ; rdfs:range xsd:decimal ; rdfs:label "confidence"@en ;
+    rdfs:comment "Self-consistency: the fraction of sampled extraction runs that produced the fact."@en .
+kl:support a owl:DatatypeProperty ; rdfs:domain kl:PlotFact ; rdfs:range xsd:integer ; rdfs:label "support"@en ;
+    rdfs:comment "Number of sampled extraction runs that produced the fact."@en .
+kl:sampleCount a owl:DatatypeProperty ; rdfs:domain kl:PlotFact ; rdfs:range xsd:integer ; rdfs:label "sample count"@en ;
+    rdfs:comment "Number of extraction runs sampled for the film."@en .
+kl:extractionModel a owl:DatatypeProperty ; rdfs:domain kl:PlotFact ; rdfs:range xsd:string ; rdfs:label "extraction model"@en .
