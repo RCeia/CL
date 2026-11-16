@@ -105,13 +105,14 @@ OpenAI):
 
 | | Ollama (este PC, GPU de 4 GB) | vLLM (GPU de 8–24 GB, Linux/WSL) |
 |---|---|---|
-| Modelo | `qwen2.5:3b` | `Qwen/Qwen2.5-7B-Instruct(-AWQ)`, o da proposta |
-| `.env` | `LLM_BASE_URL=http://localhost:11434/v1`<br>`LLM_MODEL=qwen2.5:3b`<br>`LLM_SUPPORTS_N=false` | deixar vazio (usa o `settings.yaml`) |
+| Modelo | `gemma3:12b` (o melhor na comparação; o `qwen2.5:3b` é o mais rápido) | `Qwen/Qwen2.5-7B-Instruct(-AWQ)`, o da proposta |
+| `.env` | `LLM_BASE_URL=http://localhost:11434/v1`<br>`LLM_MODEL=gemma3:12b`<br>`LLM_SUPPORTS_N=false` | deixar vazio (usa o `settings.yaml`) |
 | Arrancar | a aplicação Ollama arranca sozinha com o Windows | `vllm serve …` (ver README, secção 2) |
-| Velocidade | ~15–18 s por filme (5 amostras) | muito mais rápido (pede as 5 amostras de uma vez) |
+| Velocidade | ~97 s por filme com o 12B, ~18 s com o 3B (5 amostras) | muito mais rápido (pede as 5 amostras de uma vez) |
 
-O modelo de 3B é um substituto para desenvolver aqui; os resultados finais devem ser feitos com o 7B da proposta
-(no portátil do Ivan). Mudar de modelo cria automaticamente um "run" novo, sem misturar resultados.
+Na comparação de modelos (ver "Estado atual", no fim) o `gemma3:12b` foi claramente o melhor, mais do que o 7B da
+proposta; é o que está no `.env` e no grafo enriquecido. A proposta fala do Qwen2.5-7B, por isso a troca deve ser
+referida na checkpoint. Mudar de modelo cria automaticamente um "run" novo, sem misturar resultados.
 
 **Testes** (sem internet nem GPU, ~10 s):
 
@@ -215,8 +216,29 @@ No fim junta as respostas: um facto (filme, relação, valor) tem **confiança =
 | `data/extraction/facts.json` | todos os factos com `support` (1–5) e `confidence` (0.2–1.0) |
 | `reports/extraction/extraction_report.json` | nº de factos por relação e por confiança, % de JSON válido, segundos por filme, horas projetadas para 2000/2500/3000 filmes |
 
-Opções: `--limit N` (só os primeiros N filmes, para testar), `--concurrency N` (pedidos em paralelo; no Ollama
-deste PC 2 chega).
+Cada corrida fica também guardada com o seu nome (`facts_<run>.json`, `extraction_report_<run>.json`), para se
+poderem comparar modelos. O `facts.json` é sempre o da última corrida, e é o que os passos 7 e 8 leem.
+
+Opções:
+
+| Opção | Para quê |
+|---|---|
+| `--limit N` | só os primeiros N filmes, para testar |
+| `--concurrency N` | pedidos em paralelo (no Ollama deste PC, 2 chega) |
+| `--prompt config/prompts/extraction_prompt_v2.txt` | prompt mais exigente: deixar as relações vazias quando a sinopse não as suporta, não adivinhar local, época ou profissão |
+| `--shuffle` | baralha a ordem dos valores permitidos em cada uma das 5 respostas (ver abaixo) |
+| `--label nome` | o nome da corrida nas comparações |
+
+Para mudar de modelo numa corrida, põe-se a variável antes do comando:
+
+```bash
+LLM_MODEL=gemma3:12b .venv/Scripts/python.exe src/p6_extraction/run_extraction.py --concurrency 2
+```
+
+**Porquê o `--shuffle`.** Os modelos pequenos, quando a sinopse não diz nada, escolhem os primeiros valores da
+lista (Australia, France, Germany para o local; at sea, desert para o ambiente). Como fazem isso nas 5 respostas,
+o erro sai com confiança 5/5 e a self-consistency não o apanha. Com a ordem baralhada em cada resposta, esses
+palpites deixam de coincidir e a confiança deles cai.
 
 **Piloto de throughput** (opcional): `.venv/Scripts/python.exe src/p6_extraction/throughput_pilot.py` corre a extração nas primeiras 100 sinopses e
 projeta o tempo para escolher o N final. O relatório da extração já dá a mesma projeção.
@@ -325,7 +347,28 @@ Escreve `reports/calibration/extraction_eval.json` e `reports/calibration/reliab
 | `agreement` | κ de Cohen entre os dois anotadores |
 | `recall.by_min_confidence` | das coisas que a sinopse diz, quantas o LLM encontrou, para cada limiar |
 
-Pode correr-se a meio da anotação: usa só as linhas preenchidas.
+Pode correr-se a meio da anotação: usa só as linhas preenchidas. Se existir a anotação do Claude (8.4), o relatório
+inclui também `claude_vs_humans`: em quantos factos a anotação do Claude concorda com a vossa, e o κ.
+
+### 8.4 Comparar modelos (anotação completa feita pelo Claude)
+
+```bash
+.venv/Scripts/python.exe src/p8_evaluation/compare_models.py data/extraction/facts_<run1>.json data/extraction/facts_<run2>.json
+```
+
+Para comparar modelos sem anotar uma amostra de cada um, há uma anotação dos 100 filmes inteiros em
+`data/annotation/claude/gold_claude.json`. **Foi feita pelo Claude (um modelo de IA), não por vocês**, e o ficheiro
+di-lo. Para cada filme e relação lista os valores que a sinopse suporta:
+
+- `core`: dito na sinopse ou implicação inevitável (conta para o recall);
+- `acceptable`: implicação defensável.
+
+Um facto conta como certo se o valor estiver numa das duas listas. Quando um modelo propõe um valor que o anotador
+nunca viu, vai para `to_review_<run>.txt`; o veredicto fica em `reviewed_additions`, para todos os modelos serem
+julgados da mesma forma. Os rótulos de cada facto ficam em `fact_labels_claude_<run>.csv`.
+
+Saídas em `reports/calibration/`: `model_comparison.md` (a tabela), `model_comparison.json` e
+`model_comparison_calibration.png` (precisão por nível de confiança, um traço por modelo).
 
 ## 9. Perguntas de template
 
@@ -353,37 +396,62 @@ nelas.
 
 ## Estado atual e checkpoint de 16 Nov
 
-Resultados da corrida de 15 Nov 2026 (snapshot de 100 filmes, `qwen2.5:3b` no Ollama):
+Snapshot de 100 filmes. Extração final com `gemma3:12b` no Ollama (run `ce4ad2feffd5`), escolhido na comparação
+de modelos da noite de 15 para 16 Nov.
 
 | Entregável da checkpoint | Estado | Números |
 |---|---|---|
 | Grafo base | feito | 22 855 triplos, 0 violações SHACL, no Fuseki |
-| Grafo enriquecido | feito | 2298 factos para os 100 filmes (≈23 por filme), 20 682 triplos, 0 violações SHACL, no Fuseki |
-| Precisão da extração | folha pronta, **falta anotar** | 200 factos, 40 por nível de confiança |
+| Grafo enriquecido | feito, com `gemma3:12b` | 964 factos para 99 filmes, 8676 triplos, 0 violações SHACL, no Fuseki |
+| Precisão da extração | folha pronta (do `gemma3:12b`), **falta anotar** | 200 factos, 40 por nível de confiança |
 | Calibração | script e diagrama prontos, **falta anotar** | sai da mesma folha |
 | Perguntas de template | feito | 300 perguntas (100 por nº de saltos), 0 diferenças no Fuseki |
+| Comparação de modelos | feita, **com a anotação do Claude** | 8 corridas, tabela abaixo |
 
-Outros números úteis:
+### Comparação de modelos (anotação do Claude, não humana)
 
-- 500 respostas do LLM, 100% JSON válido, nenhuma cortada.
-- Factos por confiança: 0.2 → 800, 0.4 → 375, 0.6 → 299, 0.8 → 317, 1.0 → 507. Com confiança ≥ 0.6
-  (maioria das 5 respostas) ficam 1123.
-- Velocidade neste PC: 17.7 s por filme, ou seja ~10 h para 2000 filmes e ~15 h para 3000. Com o 7B no vLLM a
-  projeção tem de ser medida outra vez (é para isso que serve o piloto).
+Todos os factos de cada corrida foram avaliados contra a anotação completa dos 100 filmes feita pelo Claude
+(secção 8.4). "≥3/5" é a votação por maioria; "recall core" é a fração dos valores claramente ditos nas sinopses que
+a corrida encontrou com ≥3/5.
 
-**O que falta para a checkpoint: anotar as folhas** (passo 8.2) e correr `src/p8_evaluation/extraction_metrics.py`. Só depois há
-números de precisão e calibração. As folhas não vão para o git (`data/` é ignorado); partilhem o CSV por outro meio
-para os dois anotarem.
+| Corrida | Factos/filme | Precisão (todos) | Precisão (≥3/5) | Recall core (≥3/5) | ECE | Factos 5/5 errados | s/filme |
+|---|---|---|---|---|---|---|---|
+| qwen2.5:3b | 23.0 | 18% | 28% | 0.60 | 0.36 | 64% | 18 |
+| llama3.2:3b | 24.8 | 20% | 31% | 0.62 | 0.29 | 60% | 18 |
+| gemma3:4b | 11.8 | 34% | 37% | 0.67 | 0.43 | 57% | 47 |
+| qwen2.5:7b | 16.1 | 27% | 34% | 0.70 | 0.39 | 60% | 55 |
+| **gemma3:12b** | 9.6 | **44%** | **51%** | **0.76** | 0.33 | **42%** | 97 |
+| gemma3:4b + prompt v2 + shuffle | 15.9 | 30% | 43% | 0.67 | **0.22** | 41% | 38 |
+| qwen2.5:3b + shuffle | 30.2 | 16% | 28% | 0.55 | 0.27 | 61% | 18 |
+| qwen2.5:3b + prompt v2 + shuffle | 29.7 | 16% | 28% | 0.55 | 0.27 | 60% | 18 |
 
-**Observações para discutir**
+Gráfico: `reports/calibration/model_comparison_calibration.png`. Tabela gerada: `reports/calibration/model_comparison.md`.
 
-- O modelo de 3B erra com confiança alta em alguns casos. Por exemplo, dá "police officer" com confiança 1.0 ao
-  protagonista de Batman Begins; "police officer" é a profissão mais frequente com confiança ≥ 0.6 (24 filmes),
-  provavelmente demasiadas. A anotação vai mostrar quanto.
-- O vocabulário SKOS ainda é a lista inicial: não há, por exemplo, "thief" nem "superhero", e o modelo tem de
-  escolher o valor mais próximo. Curar a lista a partir de `keyword_frequencies.json` deve melhorar a extração.
-- Estes resultados são com o 3B como substituto. Para os resultados finais: correr o passo 6 com o 7B da proposta
-  (portátil do Ivan), escolher o N final com o relatório da extração, e repetir os passos 7–9.
+**O que mostra**
+
+- **O modelo maior é o melhor:** o `gemma3:12b` é o mais preciso, o que mais encontra e o que menos erra com 5/5.
+  É o que alimenta agora o grafo enriquecido e a folha de anotação.
+- **Porque é que os modelos pequenos erram com confiança alta:** quando a sinopse não diz nada, escolhem os primeiros
+  valores da lista (Australia, France, Germany; at sea, desert). Fazem-no nas 5 respostas, por isso o erro sai com
+  5/5 e a self-consistency não o apanha.
+- **O `--shuffle` com o prompt v2 corrige isso num modelo que lê o texto:** no `gemma3:4b` o ECE cai de 0.43 para
+  0.22 e a precisão por maioria sobe de 37% para 43%, sem perder recall. No `qwen2.5:3b` só melhora a calibração
+  (0.36 → 0.27): os palpites ficam espalhados por 1/5 e 2/5, mas continuam a ser palpites.
+- **A época é a pior relação** em todos os modelos (22% no `gemma3:12b`): assumem "present day" sem pistas no
+  texto. O vocabulário também tem lacunas ("thief", "superhero") que obrigam a escolher o valor mais próximo.
+- **Velocidade:** o `gemma3:12b` demora ~97 s por filme neste PC (GPU de 4 GB), ou seja ~54 h para 2000 filmes.
+  Para o N final é preciso uma GPU maior (portátil do Ivan ou outra) ou um N menor.
+
+**A anotação do Claude é provisória.** Serve para comparar modelos de forma igual, mas os números da proposta têm de
+vir da vossa anotação. Quando anotarem a folha de precisão, o `extraction_metrics.py` diz também quanto o Claude
+concorda convosco (`claude_vs_humans`).
+
+**O que falta para a checkpoint:** anotar `precision_sheet.csv` (agora do `gemma3:12b`) e correr
+`src/p8_evaluation/extraction_metrics.py`. As folhas não vão para o git (`data/` é ignorado); partilhem o CSV por
+outro meio para os dois anotarem.
+
+**Próxima experiência sugerida:** `gemma3:12b` com `--prompt config/prompts/extraction_prompt_v2.txt --shuffle`
+(~3 h neste PC). É a combinação que deve dar a melhor precisão e calibração ao mesmo tempo.
 
 ## Próximos passos (checkpoint de 3 Dez)
 
@@ -399,8 +467,8 @@ para os dois anotarem.
 
 | Sintoma | Solução |
 |---|---|
-| `Model qwen2.5:3b not served` | abrir a aplicação Ollama; `ollama pull qwen2.5:3b` se o modelo não estiver descarregado |
-| `src/p6_extraction/run_extraction.py` muito lento | normal com o 3B neste PC (~15–18 s por filme); usar `--limit` para testes |
+| `Model gemma3:12b not served` | abrir a aplicação Ollama; `ollama pull gemma3:12b` se o modelo não estiver descarregado |
+| `src/p6_extraction/run_extraction.py` muito lento | normal neste PC (~97 s por filme com o 12B); usar `--limit` para testes |
 | Docker Desktop não arranca (erro do `engine.sock`) | fechar o Docker Desktop, renomear `%LOCALAPPDATA%\Docker\run` e `%LOCALAPPDATA%\docker-secrets-engine` e abrir de novo |
 | `src/p5_fuseki/fuseki_loader.py` falha com "connection refused" | o Fuseki não está ligado: correr o `docker compose … up -d` |
 | `src/p8_evaluation/annotation.py` recusa | já existem folhas (podem ter anotações); `--force` só se quiserem mesmo apagá-las |

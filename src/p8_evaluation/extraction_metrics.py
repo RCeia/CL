@@ -248,6 +248,23 @@ def reliability_diagram(levels: list[dict[str, Any]], path: Path, title: str) ->
     plt.close(figure)
 
 
+def claude_agreement(rows: list[dict[str, str]], key: dict[str, Any], gold_path: Path) -> dict[str, Any]:
+    """How often the Claude annotation agrees with the team's final label on the precision sheet."""
+    from p8_evaluation.compare_models import is_correct, load_gold
+
+    claude = load_gold(gold_path)
+    pairs = []
+    for row in rows:
+        first, second, final = (parse_label(row.get(column)) for column in ("annotator_1", "annotator_2", "final"))
+        human, _ = gold(first, second, final)
+        item = key["items"][row["item"]]
+        if human is None or str(item["movie_id"]) not in claude["films"]:
+            continue
+        pairs.append((human, is_correct(claude, item)))
+    result = cohen_kappa(pairs)
+    return {"items": result["items"], "accuracy_of_claude": result["observed_agreement"], "kappa": result["kappa"]}
+
+
 def run(settings: Settings) -> dict[str, Any]:
     annotation = settings.path("annotation")
     payload = read_json(settings.path("extraction") / FACTS_FILE)
@@ -259,6 +276,9 @@ def run(settings: Settings) -> dict[str, Any]:
     recall_path = annotation / RECALL_SHEET
     recall = recall_metrics(read_sheet(recall_path), payload["facts"], relations, payload["samples_per_synopsis"]) if recall_path.is_file() else None
     report = {"run_id": key["run_id"], "model": key["model"], "precision": precision, "recall": recall}
+    claude_gold = settings.root / "data" / "annotation" / "claude" / "gold_claude.json"
+    if claude_gold.is_file():
+        report["claude_vs_humans"] = claude_agreement(read_sheet(annotation / PRECISION_SHEET), key, claude_gold)
     out = settings.path("reports_evaluation")
     write_json(out / "extraction_eval.json", report)
     if precision["annotated_items"]:

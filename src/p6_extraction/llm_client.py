@@ -87,6 +87,23 @@ class LlmClient:
         response.raise_for_status()
         return response.json()
 
+    def complete_each(self, variants: list[list[dict[str, str]]], schema: dict[str, Any], seed_offset: int = 0) -> Completion:
+        """One sample per message list (e.g. the same prompt with the allowed values in different orders)."""
+        started = time.perf_counter()
+        base_seed = None if self.seed is None else self.seed + seed_offset
+        responses = [
+            self.request(messages, schema, 1, None if base_seed is None else base_seed * 1000 + index)
+            for index, messages in enumerate(variants)
+        ]
+        choices = [choice for response in responses for choice in response["choices"]]
+        return Completion(
+            texts=[choice["message"]["content"] or "" for choice in choices],
+            prompt_tokens=sum(response.get("usage", {}).get("prompt_tokens", 0) for response in responses),
+            completion_tokens=sum(response.get("usage", {}).get("completion_tokens", 0) for response in responses),
+            seconds=time.perf_counter() - started,
+            finish_reasons=[choice.get("finish_reason") or "" for choice in choices],
+        )
+
     def complete(self, messages: list[dict[str, str]], schema: dict[str, Any], seed_offset: int = 0) -> Completion:
         started = time.perf_counter()
         base_seed = None if self.seed is None else self.seed + seed_offset

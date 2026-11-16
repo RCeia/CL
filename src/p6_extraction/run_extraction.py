@@ -8,10 +8,12 @@ import argparse
 import hashlib
 import json
 import logging
+import random
 import statistics
 import time
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -93,6 +95,17 @@ def read_records(path: Path) -> dict[int, dict[str, Any]]:
     return records
 
 
+def shuffled(relations: list[PlotRelation], seed: int) -> list[PlotRelation]:
+    """The same relations with their allowed values in a seeded random order."""
+    rng = random.Random(seed)
+    result = []
+    for relation in relations:
+        items = list(relation.concepts.items())
+        rng.shuffle(items)
+        result.append(replace(relation, concepts=dict(items)))
+    return result
+
+
 def movie_year(movie: dict[str, Any]) -> str:
     return (movie.get("release_date") or "")[:4] or "unknown year"
 
@@ -138,11 +151,19 @@ def _is_object(text: str) -> bool:
         return False
 
 
-def run(settings: Settings, limit: int | None, concurrency: int | None) -> Path:
+def run(
+    settings: Settings,
+    limit: int | None,
+    concurrency: int | None,
+    prompt: Path | None = None,
+    shuffle: bool = False,
+    label: str | None = None,
+) -> Path:
+    prompt_path = prompt or settings.path("extraction_prompt")
     max_values = settings["extraction"]["max_values_per_relation"]
     relations = load_relations(settings.path("ontology"), settings.path("plot_vocabulary"), settings["iris"]["ontology"])
     schema = json_schema(relations, max_values)
-    templates = load_prompt(settings.path("extraction_prompt"))
+    templates = load_prompt(prompt_path)
     client = LlmClient.from_settings(settings)
     available = client.models()
     if client.model not in available:
@@ -151,10 +172,11 @@ def run(settings: Settings, limit: int | None, concurrency: int | None) -> Path:
     run_id = fingerprint(
         [
             client.model,
-            settings.path("extraction_prompt").read_text(encoding="utf-8"),
+            prompt_path.read_text(encoding="utf-8"),
             relations_description(relations),
             json.dumps([client.temperature, client.top_p, client.samples, client.seed, max_values, client.max_tokens]),
         ]
+        + (["shuffle-values-per-sample"] if shuffle else [])  # the default run keeps its original id
     )
     samples_path = settings.path("extraction_runs") / f"samples_{run_id}.jsonl"
     samples_path.parent.mkdir(parents=True, exist_ok=True)
@@ -170,8 +192,15 @@ def run(settings: Settings, limit: int | None, concurrency: int | None) -> Path:
     )
 
     def extract(movie: dict[str, Any]) -> dict[str, Any]:
-        messages = build_messages(templates, relations, max_values, movie["title"], movie_year(movie), movie["overview"])
-        completion = client.complete(messages, schema, seed_offset=movie["id"])
+        def messages_for(ordered: list[PlotRelation]) -> list[dict[str, str]]:
+            return build_messages(templates, ordered, max_values, movie["title"], movie_year(movie), movie["overview"])
+
+        if shuffle:
+            # a different order of allowed values in each sample, so position-driven picks stop agreeing
+            variants = [messages_for(shuffled(relations, movie["id"] * 100 + index)) for index in range(client.samples)]
+            completion = client.complete_each(variants, schema, seed_offset=movie["id"])
+        else:
+            completion = client.complete(messages_for(relations), schema, seed_offset=movie["id"])
         return {
             "movie_id": movie["id"],
             "title": movie["title"],
@@ -222,17 +251,30 @@ def run(settings: Settings, limit: int | None, concurrency: int | None) -> Path:
         "snapshot_utc": read_json(settings.path("raw_tmdb") / "manifest.json")["snapshot_utc"],
         "samples_file": str(samples_path.relative_to(settings.root)).replace("\\", "/"),
         "missing_movies": len(selected_ids) - len(records),
+        "prompt_file": str(prompt_path.relative_to(settings.root)).replace("\\", "/") if prompt_path.is_relative_to(settings.root) else str(prompt_path),
+        "shuffle_values": shuffle,
+        "label": label or " + ".join(
+            [client.model]
+            + ([prompt_path.stem] if prompt_path != settings.path("extraction_prompt") else [])
+            + (["shuffle"] if shuffle else [])
+        ),
     }
+    # facts.json / extraction_report.json always hold the latest run (what steps 7 and 8 read); the copies named
+    # after the run id keep every model's results side by side for comparison.
+    payload = {**meta, "movie_ids": [record["movie_id"] for record in records], "facts": facts}
     facts_path = settings.path("extraction") / FACTS_FILE
-    write_json(facts_path, {**meta, "movie_ids": [record["movie_id"] for record in records], "facts": facts})
-    report_path = settings.path("reports_extraction") / "extraction_report.json"
-    if not extracted and report_path.is_file():
-        previous = read_json(report_path)  # a resume with nothing left to do keeps the measured throughput
-        if previous.get("run_id") == run_id and previous.get("throughput_basis", "").startswith("wall"):
+    write_json(facts_path, payload)
+    write_json(settings.path("extraction") / f"facts_{run_id}.json", payload)
+    reports = settings.path("reports_extraction")
+    run_report_path = reports / f"extraction_report_{run_id}.json"
+    if not extracted and run_report_path.is_file():
+        previous = read_json(run_report_path)  # a resume with nothing left to do keeps the measured throughput
+        if previous.get("throughput_basis", "").startswith("wall"):
             wall = (previous["movies_timed"], previous["wall_seconds_timed"])
     report = extraction_report(records, facts, settings, meta, wall)
     report.update({"movies_timed": wall[0], "wall_seconds_timed": round(wall[1], 1)})
-    write_json(report_path, report)
+    write_json(reports / "extraction_report.json", report)
+    write_json(run_report_path, report)
     logger.info(
         "Wrote %d facts for %d movies to %s (%d movies still missing)",
         len(facts), len(records), facts_path, len(selected_ids) - len(records),
@@ -244,9 +286,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Extract plot facts with self-consistency confidence from the snapshot's synopses.")
     parser.add_argument("--limit", type=int, default=None, help="only the first N movies (default: dataset.final_size)")
     parser.add_argument("--concurrency", type=int, default=None, help="override extraction.concurrency")
+    parser.add_argument("--prompt", type=Path, default=None, help="another prompt file (default: paths.extraction_prompt)")
+    parser.add_argument("--shuffle", action="store_true", help="shuffle the allowed values differently in each sample")
+    parser.add_argument("--label", default=None, help="name of this run in comparisons (default: model + options)")
     args = parser.parse_args()
     setup_logging()
-    run(load_settings(), args.limit, args.concurrency)
+    run(load_settings(), args.limit, args.concurrency, args.prompt.resolve() if args.prompt else None, args.shuffle, args.label)
 
 
 if __name__ == "__main__":

@@ -116,15 +116,17 @@ A query without `GRAPH` sees the union of all three; the base vs. enriched ablat
 .venv/bin/python src/p6_extraction/run_extraction.py
 ```
 
-Every overview of the selected movies (`dataset.final_size`, or `--limit N`) is sent to the LLM `llm.samples_per_synopsis` times with the vocabulary-constrained prompt and JSON schema. Raw samples are appended to `data/extraction/runs/samples_<run>.jsonl` as they arrive, so an interrupted run resumes; the run id hashes the model, prompt, vocabulary and sampling settings. A fact (film, relation, concept) gets confidence = samples that contain it / samples requested. Facts go to `data/extraction/facts.json` and a summary with throughput to `reports/extraction/extraction_report.json`.
+Every overview of the selected movies (`dataset.final_size`, or `--limit N`) is sent to the LLM `llm.samples_per_synopsis` times with the vocabulary-constrained prompt and JSON schema. Raw samples are appended to `data/extraction/runs/samples_<run>.jsonl` as they arrive, so an interrupted run resumes; the run id hashes the model, prompt, vocabulary and sampling settings. A fact (film, relation, concept) gets confidence = samples that contain it / samples requested. Facts go to `data/extraction/facts.json` and a summary with throughput to `reports/extraction/extraction_report.json`; both are also kept per run as `facts_<run>.json` and `extraction_report_<run>.json`, so runs with different models can be compared.
 
 Without a GPU for vLLM, Ollama works through the same client. Set in `.env`:
 
 ```bash
 LLM_BASE_URL=http://localhost:11434/v1
-LLM_MODEL=qwen2.5:3b
+LLM_MODEL=gemma3:12b
 LLM_SUPPORTS_N=false
 ```
+
+`LLM_MODEL=<tag>` before the command overrides the model for one run. Options: `--prompt config/prompts/extraction_prompt_v2.txt` (stricter instructions: leave relations empty unless the synopsis supports them), `--shuffle` (a different order of the allowed values in each of the 5 samples, so values picked by position stop agreeing and lose confidence) and `--label` (the run's name in comparisons). The default run keeps the same run id, so changing these options never invalidates earlier runs.
 
 ### 7. Enriched KG
 
@@ -144,7 +146,15 @@ Each fact is written as a direct triple (`res:film/27205 kl:protagonistOccupatio
 .venv/bin/python src/p8_evaluation/extraction_metrics.py
 ```
 
-`precision_sheet.csv` holds `evaluation.precision_sample_size` facts, stratified by support level so every confidence level is represented; confidence stays hidden in `precision_key.json`. Annotators write 1 (correct) or 0 (wrong) in `annotator_1` / `annotator_2`, and `final` settles disagreements. `recall_sheet.csv` holds `evaluation.recall_sample_size` overviews x 9 relations, annotated from scratch with values from `allowed_values` (separated by `;`, `-` for none). The script refuses to overwrite existing sheets without `--force`. `src/p8_evaluation/extraction_metrics.py` writes `reports/calibration/extraction_eval.json` (population-weighted precision, per-level precision with Wilson intervals, ECE, precision vs. minimum confidence, recall by threshold, Cohen's kappa) and `reliability_diagram.png`.
+`precision_sheet.csv` holds `evaluation.precision_sample_size` facts, stratified by support level so every confidence level is represented; confidence stays hidden in `precision_key.json`. Annotators write 1 (correct) or 0 (wrong) in `annotator_1` / `annotator_2`, and `final` settles disagreements. `recall_sheet.csv` holds `evaluation.recall_sample_size` overviews x 9 relations, annotated from scratch with values from `allowed_values` (separated by `;`, `-` for none). The script refuses to overwrite existing sheets without `--force`. `src/p8_evaluation/extraction_metrics.py` writes `reports/calibration/extraction_eval.json` (population-weighted precision, per-level precision with Wilson intervals, ECE, precision vs. minimum confidence, recall by threshold, Cohen's kappa) and `reliability_diagram.png`. When `data/annotation/claude/gold_claude.json` exists it also reports how often that annotation agrees with the team's labels (`claude_vs_humans`).
+
+To compare runs without sampling, every film can be annotated once and every run scored against it:
+
+```bash
+.venv/bin/python src/p8_evaluation/compare_models.py data/extraction/facts_<run>.json ...
+```
+
+The gold lists, per film and relation, the values the synopsis supports: `core` (stated or unavoidable, used for recall) and `acceptable` (defensible implications); a fact is correct when its value is in either. Values a run proposes that the annotator never saw are written to `to_review_<run>.txt`; verdicts go into the gold's `reviewed_additions`, so every model is judged on the same terms. Output: `reports/calibration/model_comparison.{json,md}`, `model_comparison_calibration.png` and per-run fact labels. The current gold, `data/annotation/claude/gold_claude.json`, was written by Claude (an AI model), not by the team.
 
 ### 9. Template questions
 

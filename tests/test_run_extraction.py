@@ -38,6 +38,31 @@ def test_confidence_is_share_of_requested_samples(project):
     assert len(facts) == 3
 
 
+def test_shuffle_changes_order_per_seed_not_content(project):
+    relations = relations_of(project)
+    first, second = run_extraction.shuffled(relations, 1), run_extraction.shuffled(relations, 2)
+    for original, a, b in zip(relations, first, second):
+        assert set(a.concepts.items()) == set(original.concepts.items()) == set(b.concepts.items())
+    assert any(list(a.concepts) != list(b.concepts) for a, b in zip(first, second))
+    assert [list(r.concepts) for r in run_extraction.shuffled(relations, 1)] == [list(r.concepts) for r in first]
+
+
+def test_shuffled_run_sends_one_order_per_sample(project, monkeypatch):
+    sent = []
+
+    def complete_each(self, variants, schema, seed_offset=0):
+        sent.append(variants)
+        return Completion([answer(protagonistOccupation=["detective"])] * len(variants), 1, 1, 0.1, ["stop"] * len(variants))
+
+    monkeypatch.setattr(LlmClient, "models", lambda self: [self.model])
+    monkeypatch.setattr(LlmClient, "complete_each", complete_each)
+    payload = read_json(run_extraction.run(project, limit=1, concurrency=1, shuffle=True))
+    assert len(sent) == 1 and len(sent[0]) == 5
+    assert len({variant[1]["content"] for variant in sent[0]}) > 1  # the user messages differ in value order
+    assert payload["shuffle_values"] is True and payload["label"].endswith("shuffle")
+    assert (project.path("extraction") / f"facts_{payload['run_id']}.json").is_file()
+
+
 def test_run_writes_facts_and_resumes(project, monkeypatch):
     calls = []
 

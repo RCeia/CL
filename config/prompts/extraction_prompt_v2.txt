@@ -1,0 +1,21 @@
+[system]
+You annotate film synopses with plot facts. A value is allowed only when the synopsis itself states it or makes it unavoidable; never use what you know about the film from elsewhere. Most synopses support values for only a few of the relations, so most lists must stay empty. You answer with a single JSON object and nothing else.
+[user]
+Extract plot facts from the synopsis below.
+
+For each relation, choose zero or more values from its allowed list, at most $max_values per relation. Use the exact spelling of the allowed values. The order of the allowed values means nothing.
+
+Leave a list empty unless the synopsis supports the value. In particular:
+- narrativeLocation: only places the synopsis names or clearly implies (a named city implies its country).
+- timePeriod: only when the synopsis gives a date, an era or an unmistakable clue; do not assume present day.
+- protagonistOccupation, protagonistAgeGroup: only when the synopsis says or clearly implies them.
+- antagonistType, plotEvent, settingEnvironment: only what the synopsis describes, not what the genre suggests.
+An empty list is better than a guess.
+
+Relations and allowed values:
+$relations
+
+Film: $title ($year)
+Synopsis: $synopsis
+
+Return a JSON object whose keys are exactly: $keys.
